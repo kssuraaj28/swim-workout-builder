@@ -11,6 +11,7 @@ export function createDefaultStep(): WorkoutStep {
     strokeType: 'free',
     distance: 100,
     equipment: [],
+    trackable: false,
     targetPace: '',
     description: '',
     restType: 'rest',

@@ -26,7 +26,14 @@ The app will be available at `http://localhost:5173`.
 npm run build
 ```
 
-Output goes to the `dist/` directory and can be served as static files.
+Output goes to the `dist/` directory. Verify the build locally with `npm run preview`.
+
+## Hosting
+
+The app is a fully static bundle — no backend required (state persists in `localStorage`). Any static host works:
+
+- **Managed (recommended):** push the repo to GitHub Pages, Netlify, Vercel, or Cloudflare Pages. They run `npm run build` and serve `dist/` automatically.
+- **Manual:** run `npm run build` locally and upload `dist/` to S3, nginx, or any static file host.
 
 ## Tech Stack
 

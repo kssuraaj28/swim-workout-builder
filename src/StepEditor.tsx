@@ -2,19 +2,12 @@ import type {
   WorkoutStep,
   StrokeType,
   EquipmentType,
-  DrillType,
   RestType,
 } from './types';
 import {
   STROKE_LABELS,
   EQUIPMENT_LABELS,
 } from './types';
-
-const DRILL_LABELS: Record<DrillType, string> = {
-  kick: 'Kick',
-  pull: 'Pull',
-  drill: 'Drill',
-};
 
 interface StepEditorProps {
   step: WorkoutStep;
@@ -56,7 +49,7 @@ export function StepEditor({ step, onChange, onRemove, canRemove }: StepEditorPr
           Stroke
           <select
             value={step.strokeType}
-            onChange={e => update({ strokeType: e.target.value as StrokeType, drillType: e.target.value === 'drill' ? 'drill' : undefined })}
+            onChange={e => update({ strokeType: e.target.value as StrokeType })}
             className="mt-0.5 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
           >
             {Object.entries(STROKE_LABELS).map(([k, v]) => (
@@ -65,20 +58,15 @@ export function StepEditor({ step, onChange, onRemove, canRemove }: StepEditorPr
           </select>
         </label>
 
-        {step.strokeType === 'drill' && (
-          <label className="flex flex-col text-xs text-gray-500">
-            Drill Type
-            <select
-              value={step.drillType || 'drill'}
-              onChange={e => update({ drillType: e.target.value as DrillType })}
-              className="mt-0.5 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
-            >
-              {Object.entries(DRILL_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
-          </label>
-        )}
+        <label className="flex flex-col text-xs text-gray-500" title="Use this for drills / kick">
+          Trackable
+          <input
+            type="checkbox"
+            checked={step.trackable}
+            onChange={e => update({ trackable: e.target.checked })}
+            className="mt-1 self-start rounded border-gray-300"
+          />
+        </label>
 
         <label className="flex flex-col text-xs text-gray-500">
           Target Pace
