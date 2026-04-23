@@ -9,8 +9,8 @@ export interface WorkoutStep {
   strokeType: StrokeType;
   distance: number;
   equipment: EquipmentType[];
-  /** Marks the step as a drill / kick — exported as drill stroke type with a generic drill sub-type. */
-  trackable: boolean;
+  /** When false, the step is exported as a drill (drill stroke type + generic drill sub-type) so Garmin doesn't auto-track it. */
+  track: boolean;
   targetPace: string; // mm:ss per 100, e.g. "1:30"
   description: string;
   restType: RestType;
@@ -45,7 +45,6 @@ export interface Workout {
   poolLength: number;
   poolLengthUnit: 'yard' | 'meter';
   sets: WorkoutSet[];
-  volume: number; // 1-5, default 3 (neutral)
   savedAt?: string; // ISO date string
 }
 
@@ -58,19 +57,10 @@ export const STROKE_TYPE_MAP: Record<StrokeType, { id: number; key: string; disp
   mixed: { id: 8, key: 'mixed', displayOrder: 8 },
 };
 
-/** Garmin drill stroke type — used when WorkoutStep.trackable is true. */
+/** Garmin drill stroke type — used when WorkoutStep.track is false. */
 export const DRILL_STROKE = { id: 4, key: 'drill', displayOrder: 4 };
-/** Garmin generic drill sub-type — paired with DRILL_STROKE when exporting trackable steps. */
+/** Garmin generic drill sub-type — paired with DRILL_STROKE when exporting untracked steps. */
 export const DRILL_SUBTYPE = { id: 3, key: 'drill', displayOrder: 3 };
-
-export const EQUIPMENT_TYPE_MAP: Record<EquipmentType, { id: number; key: string | null; displayOrder: number }> = {
-  none: { id: 0, key: null, displayOrder: 0 },
-  fins: { id: 1, key: 'fins', displayOrder: 1 },
-  kickboard: { id: 2, key: 'kickboard', displayOrder: 2 },
-  paddles: { id: 3, key: 'paddles', displayOrder: 3 },
-  pull_buoy: { id: 4, key: 'pull_buoy', displayOrder: 4 },
-  snorkel: { id: 5, key: 'snorkel', displayOrder: 5 },
-};
 
 export const POOL_UNIT_MAP: Record<string, { unitId: number; unitKey: string; factor: number }> = {
   yard: { unitId: 230, unitKey: 'yard', factor: 91.44 },
@@ -82,7 +72,7 @@ export const STROKE_LABELS: Record<StrokeType, string> = {
   backstroke: 'Backstroke',
   breaststroke: 'Breaststroke',
   butterfly: 'Butterfly',
-  mixed: 'Mixed / IM',
+  mixed: 'Mixed',
 };
 
 export const EQUIPMENT_LABELS: Record<EquipmentType, string> = {

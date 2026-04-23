@@ -9,7 +9,7 @@ function stepSummary(step: WorkoutStep, unit: string): string {
   const parts: string[] = [];
   parts.push(`${step.distance} ${unit}s`);
   parts.push(STROKE_LABELS[step.strokeType]);
-  if (step.trackable) parts.push('(drill)');
+  if (!step.track) parts.push('(drill)');
   if (step.equipment.length > 0) parts.push(`w/ ${step.equipment.map(e => EQUIPMENT_LABELS[e]).join(', ')}`);
   if (step.targetPace) parts.push(`@ ${step.targetPace}/100`);
   return parts.join(' ');

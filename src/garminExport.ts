@@ -1,14 +1,26 @@
 import type {
+  EquipmentType,
   Workout,
   WorkoutStep,
 } from './types';
 import {
   STROKE_TYPE_MAP,
-  EQUIPMENT_TYPE_MAP,
   DRILL_STROKE,
   DRILL_SUBTYPE,
   POOL_UNIT_MAP,
 } from './types';
+import { calcTotalDistance } from './utils';
+
+const EQUIPMENT_CODE: Record<EquipmentType, string | null> = {
+  none: null,
+  fins: 'FIN',
+  kickboard: 'KCK',
+  paddles: 'PDL',
+  pull_buoy: 'BUO',
+  snorkel: 'SNK',
+};
+
+const NO_EQUIPMENT = { equipmentTypeId: 0, displayOrder: 0 };
 
 const STEP_ID_BASE = 12834535360;
 let stepIdCounter = 0;
@@ -59,10 +71,10 @@ function buildStepRest(step: WorkoutStep, childStepId: number) {
 }
 
 function buildExecutableStep(step: WorkoutStep, childStepId: number, poolUnit: string) {
-  const stroke = step.trackable ? DRILL_STROKE : STROKE_TYPE_MAP[step.strokeType];
-  const firstEquip = step.equipment.length > 0 ? step.equipment[0] : 'none';
-  const equip = EQUIPMENT_TYPE_MAP[firstEquip];
-  const description = [step.targetPace ? `Target: ${step.targetPace}/100` : '', step.description].filter(Boolean).join(', ');
+  const stroke = step.track ? STROKE_TYPE_MAP[step.strokeType] : DRILL_STROKE;
+  const equipCodes = step.equipment.map(e => EQUIPMENT_CODE[e]).filter(Boolean);
+  const equipTag = equipCodes.join(' | ');
+  const description = [equipTag, step.targetPace, step.description].filter(Boolean).join(' -- ');
 
   return {
     type: 'ExecutableStepDTO',
@@ -70,15 +82,15 @@ function buildExecutableStep(step: WorkoutStep, childStepId: number, poolUnit: s
     stepOrder: 0,
     stepType: buildStepType(),
     childStepId: childStepId,
-    ...(description && { description }),
+    ...(description && { description, notes: description }),
     endCondition: { conditionTypeId: 3, conditionTypeKey: 'distance', displayOrder: 3, displayable: true },
     endConditionValue: step.distance,
     preferredEndConditionUnit: POOL_UNIT_MAP[poolUnit],
     strokeType: { strokeTypeId: stroke.id, strokeTypeKey: stroke.key, displayOrder: stroke.displayOrder },
-    equipmentType: { equipmentTypeId: equip.id, equipmentTypeKey: equip.key, displayOrder: equip.displayOrder },
-    drillType: step.trackable
-      ? { drillTypeId: DRILL_SUBTYPE.id, drillTypeKey: DRILL_SUBTYPE.key, displayOrder: DRILL_SUBTYPE.displayOrder }
-      : NO_DRILL,
+    equipmentType: NO_EQUIPMENT,
+    drillType: step.track
+      ? NO_DRILL
+      : { drillTypeId: DRILL_SUBTYPE.id, drillTypeKey: DRILL_SUBTYPE.key, displayOrder: DRILL_SUBTYPE.displayOrder },
   };
 }
 
@@ -176,6 +188,8 @@ export function exportToGarmin(workout: Workout): object {
     poolLength: workout.poolLength,
     poolLengthUnit: poolUnit,
     avgTrainingSpeed: 0,
+    // Garmin quirk: despite the name, this field expects the raw distance in pool units, not meters.
+    estimatedDistanceInMeters: calcTotalDistance(workout),
     estimatedDistanceUnit: {},
     shared: false,
   };

@@ -11,7 +11,7 @@ export function createDefaultStep(): WorkoutStep {
     strokeType: 'free',
     distance: 100,
     equipment: [],
-    trackable: false,
+    track: true,
     targetPace: '',
     description: '',
     restType: 'rest',
@@ -37,7 +37,6 @@ export function createDefaultWorkout(): Workout {
     poolLength: 25,
     poolLengthUnit: 'yard',
     sets: [],
-    volume: 3,
   };
 }
 
@@ -45,25 +44,6 @@ export function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${String(secs).padStart(2, '0')}`;
-}
-
-// Volume multipliers: level 1 = 0.5x, 2 = 0.75x, 3 = 1x, 4 = 1.25x, 5 = 1.5x
-const VOLUME_MULTIPLIERS = [0.5, 0.75, 1, 1.25, 1.5];
-
-export function getVolumeMultiplier(volume: number): number {
-  return VOLUME_MULTIPLIERS[Math.max(0, Math.min(4, (volume || 3) - 1))];
-}
-
-export function applyVolume(workout: Workout): Workout {
-  const mult = getVolumeMultiplier(workout.volume);
-  if (mult === 1) return workout;
-  return {
-    ...workout,
-    sets: workout.sets.map(set => ({
-      ...set,
-      iterations: Math.max(1, Math.round(set.iterations * mult)),
-    })),
-  };
 }
 
 /** Deep-clone a set with fresh ids for the set and every step. */

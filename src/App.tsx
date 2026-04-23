@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { SetTemplate, Workout, WorkoutSet } from './types';
-import { createDefaultWorkout, createDefaultSet, calcTotalDistance, generateId, applyVolume } from './utils';
+import { createDefaultWorkout, createDefaultSet, calcTotalDistance, generateId } from './utils';
 import { loadLibrary, saveWorkoutToLibrary, deleteFromLibrary } from './library';
 import { loadSetLibrary, upsertSetTemplate, deleteSetTemplate } from './setLibrary';
 import { SetCard } from './SetCard';
@@ -38,6 +38,7 @@ function App() {
   /** Only meaningful when mode === 'set-template'. null means "creating new". */
   const [editingTemplate, setEditingTemplate] = useState<SetTemplate | null>(null);
   const [insertingSet, setInsertingSet] = useState(false);
+  const [garminCopied, setGarminCopied] = useState(false);
 
   // Auto-save current workout to localStorage
   useEffect(() => {
@@ -58,15 +59,16 @@ function App() {
     updateSets(sets);
   };
 
-  const handleExportGarmin = () => {
-    const garmin = exportToGarmin(applyVolume(workout));
+  const handleExportGarmin = async () => {
+    const garmin = exportToGarmin(workout);
     const json = JSON.stringify(garmin, null, 2);
-    downloadJson(json, `${workout.name || 'workout'}.json`);
-  };
-
-  const handleExportFile = () => {
-    const json = JSON.stringify(workout, null, 2);
-    downloadJson(json, `${workout.name || 'workout'}.swim.json`);
+    try {
+      await navigator.clipboard.writeText(json);
+      setGarminCopied(true);
+      setTimeout(() => setGarminCopied(false), 1500);
+    } catch {
+      alert('Failed to copy to clipboard.');
+    }
   };
 
   const handleSave = () => {
@@ -158,8 +160,7 @@ function App() {
     setEditingTemplate(null);
   };
 
-  const effectiveWorkout = applyVolume(workout);
-  const totalDist = calcTotalDistance(effectiveWorkout);
+  const totalDist = calcTotalDistance(workout);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -233,13 +234,6 @@ function App() {
                 Save
               </button>
               <button
-                onClick={handleExportFile}
-                disabled={workout.sets.length === 0}
-                className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 disabled:opacity-50"
-              >
-                Export File
-              </button>
-              <button
                 onClick={() => setShowPreview(!showPreview)}
                 className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
               >
@@ -250,7 +244,7 @@ function App() {
                 disabled={workout.sets.length === 0}
                 className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 ml-auto"
               >
-                Export Garmin
+                {garminCopied ? 'Copied!' : 'Copy Garmin Export Json'}
               </button>
             </div>
           )}
@@ -264,7 +258,7 @@ function App() {
             />
           ) : showPreview ? (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <WorkoutPreview workout={effectiveWorkout} />
+              <WorkoutPreview workout={workout} />
             </div>
           ) : (
             <div className="space-y-6">
@@ -387,16 +381,6 @@ function ModeButton({
       {label}
     </button>
   );
-}
-
-function downloadJson(json: string, filename: string) {
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default App;
