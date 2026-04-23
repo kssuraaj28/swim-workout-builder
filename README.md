@@ -24,6 +24,7 @@ The app will be available at `http://localhost:5173`.
 
 ```bash
 npm run build
+cd dist && python3 -m http.server 8000 #Then open http://localhost:8000
 ```
 
 Output goes to the `dist/` directory. Verify the build locally with `npm run preview`.
