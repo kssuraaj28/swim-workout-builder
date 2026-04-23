@@ -29,10 +29,14 @@ export function createDefaultSet(): WorkoutSet {
   };
 }
 
+export function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function createDefaultWorkout(): Workout {
   return {
-    id: generateId(),
     name: '',
+    createdAt: todayDateString(),
     description: '',
     poolLength: 25,
     poolLengthUnit: 'yard',

@@ -1,12 +1,13 @@
 import type { Workout } from './types';
 import { calcTotalDistance } from './utils';
+import type { WorkoutKey } from './library';
 
 interface WorkoutLibraryProps {
   workouts: Workout[];
-  currentId: string;
+  currentKey: WorkoutKey;
   onSelect: (workout: Workout) => void;
   onClone: (workout: Workout) => void;
-  onDelete: (id: string) => void;
+  onDelete: (key: WorkoutKey) => void;
   onImport: () => void;
 }
 
@@ -16,7 +17,7 @@ function formatDate(iso?: string): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-export function WorkoutLibrary({ workouts, currentId, onSelect, onClone, onDelete, onImport }: WorkoutLibraryProps) {
+export function WorkoutLibrary({ workouts, currentKey, onSelect, onClone, onDelete, onImport }: WorkoutLibraryProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-gray-200 flex items-center justify-between">
@@ -33,12 +34,12 @@ export function WorkoutLibrary({ workouts, currentId, onSelect, onClone, onDelet
           <p className="text-xs text-gray-400 p-3">No saved workouts yet. Click Save to add one.</p>
         ) : (
           <ul>
-            {workouts.map(w => {
+            {workouts.map((w, i) => {
               const dist = calcTotalDistance(w);
-              const isActive = w.id === currentId;
+              const isActive = w.name === currentKey.name && w.createdAt === currentKey.createdAt;
               return (
                 <li
-                  key={w.id}
+                  key={`${w.name}-${w.createdAt}-${i}`}
                   className={`border-b border-gray-100 ${isActive ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                 >
                   <button
@@ -62,7 +63,7 @@ export function WorkoutLibrary({ workouts, currentId, onSelect, onClone, onDelet
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`Delete "${w.name || 'Untitled'}"?`)) onDelete(w.id);
+                        if (confirm(`Delete "${w.name || 'Untitled'}"?`)) onDelete({ name: w.name, createdAt: w.createdAt });
                       }}
                       className="text-xs text-gray-400 hover:text-red-600"
                     >

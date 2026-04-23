@@ -39,8 +39,9 @@ export interface SetTemplate {
 }
 
 export interface Workout {
-  id: string;
   name: string;
+  /** YYYY-MM-DD. Together with `name`, forms the workout's identity in the library. User-editable. */
+  createdAt: string;
   description: string;
   poolLength: number;
   poolLengthUnit: 'yard' | 'meter';
