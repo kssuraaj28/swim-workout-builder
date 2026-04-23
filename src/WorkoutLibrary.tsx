@@ -8,7 +8,6 @@ interface WorkoutLibraryProps {
   onSelect: (workout: Workout) => void;
   onClone: (workout: Workout) => void;
   onDelete: (key: WorkoutKey) => void;
-  onImport: () => void;
 }
 
 function formatDate(iso?: string): string {
@@ -17,17 +16,11 @@ function formatDate(iso?: string): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-export function WorkoutLibrary({ workouts, currentKey, onSelect, onClone, onDelete, onImport }: WorkoutLibraryProps) {
+export function WorkoutLibrary({ workouts, currentKey, onSelect, onClone, onDelete }: WorkoutLibraryProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-200 flex items-center justify-between">
+      <div className="p-3 border-b border-gray-200">
         <h2 className="text-sm font-semibold text-gray-700">Library</h2>
-        <button
-          onClick={onImport}
-          className="text-xs text-blue-600 hover:text-blue-800"
-        >
-          Import
-        </button>
       </div>
       <div className="flex-1 overflow-y-auto">
         {workouts.length === 0 ? (

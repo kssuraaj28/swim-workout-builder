@@ -8,7 +8,7 @@ import { WorkoutPreview } from './WorkoutPreview';
 import { WorkoutLibrary } from './WorkoutLibrary';
 import { InsertSetDialog } from './InsertSetDialog';
 import { exportToGarmin } from './garminExport';
-import { Header, type AppMode } from './Header';
+import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type AppMode } from './Header';
 
 const CURRENT_KEY = 'swim-workout-builder-current';
 
@@ -27,11 +27,9 @@ function loadCurrent(): Workout | null {
 interface Props {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
-  sidebarOpen: boolean;
-  onToggleSidebar: () => void;
 }
 
-export function WorkoutBuilder({ mode, onModeChange, sidebarOpen, onToggleSidebar }: Props) {
+export function WorkoutBuilder({ mode, onModeChange }: Props) {
   const [workout, setWorkout] = useState<Workout>(() => loadCurrent() || createDefaultWorkout());
   const [library, setLibrary] = useState<Workout[]>(() => loadLibrary());
   // Set templates are read-only here — used only to populate the Insert dialog. Reload each mount.
@@ -119,45 +117,6 @@ export function WorkoutBuilder({ mode, onModeChange, sidebarOpen, onToggleSideba
     }
   };
 
-  const handleImportFile = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.swim.json';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result as string);
-          if (data.sets && Array.isArray(data.sets)) {
-            const imported: Workout = { createdAt: todayDateString(), ...data };
-            const commit = (overwrite: boolean) => {
-              const updated = saveWorkoutToLibrary(imported, { overwrite });
-              setLibrary(updated);
-              setWorkout(imported);
-            };
-            try {
-              commit(false);
-            } catch (err) {
-              if (err instanceof DuplicateWorkoutError) {
-                if (confirm(`${err.message}\n\nOverwrite it?`)) commit(true);
-              } else {
-                throw err;
-              }
-            }
-          } else {
-            alert('Unrecognized file format.');
-          }
-        } catch {
-          alert('Failed to parse file.');
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  };
-
   const handleInsertSetFromLibrary = (set: WorkoutSet) => {
     updateSets([...workout.sets, set]);
     setInsertingSet(false);
@@ -166,29 +125,22 @@ export function WorkoutBuilder({ mode, onModeChange, sidebarOpen, onToggleSideba
   const totalDist = calcTotalDistance(workout);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {sidebarOpen && (
-        <aside className="w-64 shrink-0 bg-white border-r border-gray-200 no-print h-screen sticky top-0 overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gray-100">
+      <Header mode={mode} onModeChange={onModeChange} />
+
+      <div className="flex">
+        <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
           <WorkoutLibrary
             workouts={library}
             currentKey={{ name: workout.name, createdAt: workout.createdAt }}
             onSelect={handleSelectFromLibrary}
             onClone={handleCloneFromLibrary}
             onDelete={handleDeleteFromLibrary}
-            onImport={handleImportFile}
           />
         </aside>
-      )}
 
-      <div className="flex-1 min-w-0">
-        <Header
-          mode={mode}
-          onModeChange={onModeChange}
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={onToggleSidebar}
-        />
-
-        <main className="max-w-5xl mx-auto px-4 py-6">
+        <div className="flex-1 min-w-0">
+          <main className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex gap-2 flex-wrap mb-4">
             <button
               onClick={handleNew}
@@ -314,7 +266,8 @@ export function WorkoutBuilder({ mode, onModeChange, sidebarOpen, onToggleSideba
               </div>
             </div>
           )}
-        </main>
+          </main>
+        </div>
       </div>
 
       {insertingSet && (

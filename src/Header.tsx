@@ -4,27 +4,21 @@ export type AppMode = 'workout' | 'set' | 'info';
 // TODO: This is WIP
 export const ENABLE_SET_BUILDER = false;
 
+/** Header height — kept in sync with `h-14` so sidebars can offset their sticky position. */
+export const HEADER_HEIGHT_CLASS = 'h-14';
+export const STICKY_BELOW_HEADER_TOP = 'top-14';
+export const SIDEBAR_HEIGHT = 'h-[calc(100vh-3.5rem)]';
+
 interface HeaderProps {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
-  sidebarOpen?: boolean;
-  onToggleSidebar?: () => void;
 }
 
-export function Header({ mode, onModeChange, sidebarOpen, onToggleSidebar }: HeaderProps) {
+export function Header({ mode, onModeChange }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm no-print sticky top-0 z-10">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 shadow-sm no-print sticky top-0 z-20">
+      <div className={`max-w-5xl mx-auto px-4 ${HEADER_HEIGHT_CLASS} flex items-center`}>
         <div className="flex items-center gap-3">
-          {onToggleSidebar && (
-            <button
-              onClick={onToggleSidebar}
-              className="text-gray-400 hover:text-gray-600 text-lg"
-              title={sidebarOpen ? 'Hide library' : 'Show library'}
-            >
-              {sidebarOpen ? '«' : '»'}
-            </button>
-          )}
           <h1 className="text-xl font-bold text-gray-900">Swim Workout Builder</h1>
           <div className="ml-4 flex rounded-lg border border-gray-300 overflow-hidden">
             <ModeButton label="Build Workout" active={mode === 'workout'} onClick={() => onModeChange('workout')} />

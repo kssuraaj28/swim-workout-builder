@@ -6,7 +6,6 @@ import { InfoPage } from './InfoPage';
 
 function App() {
   const [mode, setMode] = useState<AppMode>('workout');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleModeChange = (next: AppMode) => {
     if (next === mode) return;
@@ -15,37 +14,14 @@ function App() {
     setMode(next);
   };
 
-  const toggleSidebar = () => setSidebarOpen(o => !o);
-
   switch (mode) {
     case 'workout':
-      return (
-        <WorkoutBuilder
-          mode={mode}
-          onModeChange={handleModeChange}
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={toggleSidebar}
-        />
-      );
+      return <WorkoutBuilder mode={mode} onModeChange={handleModeChange} />;
     case 'set':
       if (!ENABLE_SET_BUILDER) {
-        return (
-          <WorkoutBuilder
-            mode="workout"
-            onModeChange={handleModeChange}
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={toggleSidebar}
-          />
-        );
+        return <WorkoutBuilder mode="workout" onModeChange={handleModeChange} />;
       }
-      return (
-        <SetBuilder
-          mode={mode}
-          onModeChange={handleModeChange}
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={toggleSidebar}
-        />
-      );
+      return <SetBuilder mode={mode} onModeChange={handleModeChange} />;
     case 'info':
       return <InfoPage mode={mode} onModeChange={handleModeChange} />;
   }
