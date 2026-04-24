@@ -108,7 +108,9 @@ export function exportToGarmin(workout: Workout): object {
     // Build inner steps for the repeat group
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const innerSteps: any[] = [];
-    for (const step of set.steps) {
+    for (let stepIdx = 0; stepIdx < set.steps.length; stepIdx++) {
+      const step = set.steps[stepIdx];
+      const isLastStepInSet = stepIdx === set.steps.length - 1;
       const needsWithinRest = step.restType === 'lap_button' || step.restValue > 0;
 
       if (step.repetitions > 1) {
@@ -143,10 +145,12 @@ export function exportToGarmin(workout: Workout): object {
         innerSteps.push(execStep);
       }
 
-      // Lap-button rest between steps within the set (skipLastRestStep drops it on the set's final iteration)
-      const betweenRest = buildLapButtonRestStep();
-      betweenRest.stepOrder = stepOrder++;
-      innerSteps.push(betweenRest);
+      // Lap-button rest between steps within the set — skip after the last step
+      if (!isLastStepInSet) {
+        const betweenRest = buildLapButtonRestStep();
+        betweenRest.stepOrder = stepOrder++;
+        innerSteps.push(betweenRest);
+      }
     }
 
     const repeatGroup = {

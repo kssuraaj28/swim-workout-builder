@@ -1,0 +1,23 @@
+- Fix Garmin export: total distance reported is weird
+   - Repro: a 1250-yard workout shows up in Garmin as 3750 yards.
+   - `estimatedDistanceInMeters` in src/garminExport.ts is set from
+     calcTotalDistance(workout), which matches the intended total — so
+     Garmin is likely recomputing from the step structure and getting
+     a 3x figure.
+   - Suspects:
+       a) The nested per-step RepeatGroupDTO (step.repetitions > 1) may
+          be counted in addition to the executable step rather than
+          containing it.
+       b) All single-rep executable steps in a set share the same
+          childStepId (the set's). If Garmin treats childStepId as a
+          grouping key, this could multiply the count.
+       c) estimatedDistanceInMeters / estimatedDistanceUnit shape may be
+          wrong, causing Garmin to ignore it and recompute.
+   - Strong lead: the inflation appears tied to the lap-button rest
+     steps we now emit between steps and after each set. The rest
+     ExecutableStepDTOs may be getting counted as distance even though
+     their endCondition is lap.button (not distance) — possibly because
+     they reuse `strokeType`/`equipmentType` fields or are missing a
+     flag that excludes them from distance totals. Try: omit the rest
+     steps entirely and confirm the total matches; then reintroduce
+     them with a corrected shape.
