@@ -22,7 +22,6 @@ export interface WorkoutSet {
   name: string;
   iterations: number;
   steps: WorkoutStep[];
-  restAfterSet: number; // seconds
 }
 
 export type SetParamKey = 'stroke' | 'distance' | 'iterations';

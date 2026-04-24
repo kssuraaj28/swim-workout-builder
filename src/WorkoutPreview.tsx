@@ -70,9 +70,7 @@ export function WorkoutPreview({ workout }: { workout: Workout }) {
                 </div>
               </div>
             ))}
-            {set.restAfterSet > 0 && (
-              <div className="text-gray-400 text-xs mt-1">Rest {formatTime(set.restAfterSet)} before next set</div>
-            )}
+            <div className="text-gray-400 text-xs mt-1">Rest until lap press before next set</div>
           </div>
         );
       })}

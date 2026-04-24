@@ -8,7 +8,7 @@ import { WorkoutPreview } from './WorkoutPreview';
 import { WorkoutLibrary } from './WorkoutLibrary';
 import { InsertSetDialog } from './InsertSetDialog';
 import { exportToGarmin } from './garminExport';
-import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type AppMode } from './Header';
+import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, ENABLE_SET_BUILDER, type AppMode } from './Header';
 
 const CURRENT_KEY = 'swim-workout-builder-current';
 
@@ -257,12 +257,14 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                 >
                   + Add Set
                 </button>
-                <button
-                  onClick={() => setInsertingSet(true)}
-                  className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300"
-                >
-                  + Insert from Library
-                </button>
+                {ENABLE_SET_BUILDER && (
+                  <button
+                    onClick={() => setInsertingSet(true)}
+                    className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300"
+                  >
+                    + Insert from Library
+                  </button>
+                )}
               </div>
             </div>
           )}

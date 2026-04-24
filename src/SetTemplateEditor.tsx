@@ -156,17 +156,6 @@ export function SetTemplateEditor({ template, onSave, onDelete }: Props) {
               className="w-14 px-2 py-1 border border-gray-300 rounded text-sm"
             />
           </label>
-          <label className="flex items-center gap-1 text-sm text-gray-600 ml-auto">
-            Rest after set (sec)
-            <input
-              type="number"
-              min={0}
-              step={5}
-              value={set.restAfterSet}
-              onChange={e => setSet({ ...set, restAfterSet: Number(e.target.value) })}
-              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-            />
-          </label>
         </div>
         <div className="p-3 space-y-2">
           {set.steps.map((step, i) => (

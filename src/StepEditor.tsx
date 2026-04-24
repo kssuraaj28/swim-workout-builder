@@ -16,6 +16,56 @@ interface StepEditorProps {
   canRemove: boolean;
 }
 
+function parseMinSec(totalSec: number): { m: number; s: number } {
+  const clamped = Math.max(0, Math.floor(totalSec));
+  return { m: Math.floor(clamped / 60), s: clamped % 60 };
+}
+
+function parsePaceString(pace: string): { m: number; s: number } {
+  const match = /^(\d+):(\d{1,2})$/.exec(pace.trim());
+  if (!match) return { m: 0, s: 0 };
+  return { m: Number(match[1]), s: Math.min(59, Number(match[2])) };
+}
+
+function formatPace(m: number, s: number): string {
+  if (!m && !s) return '';
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+interface MinSecInputProps {
+  minutes: number;
+  seconds: number;
+  onChange: (m: number, s: number) => void;
+}
+
+function MinSecInput({ minutes, seconds, onChange }: MinSecInputProps) {
+  return (
+    <div className="flex items-center gap-1 mt-0.5">
+      <input
+        type="number"
+        min={0}
+        value={minutes}
+        onChange={e => onChange(Math.max(0, Number(e.target.value) || 0), seconds)}
+        className="w-10 px-1.5 py-1 border border-gray-300 rounded text-sm text-gray-900"
+        aria-label="minutes"
+      />
+      <span className="text-gray-500 text-sm">:</span>
+      <input
+        type="number"
+        min={0}
+        max={59}
+        value={String(seconds).padStart(2, '0')}
+        onChange={e => {
+          const raw = Number(e.target.value) || 0;
+          onChange(minutes, Math.max(0, Math.min(59, raw)));
+        }}
+        className="w-14 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
+        aria-label="seconds"
+      />
+    </div>
+  );
+}
+
 export function StepEditor({ step, onChange, onRemove, canRemove }: StepEditorProps) {
   const update = (patch: Partial<WorkoutStep>) => onChange({ ...step, ...patch });
 
@@ -62,16 +112,19 @@ export function StepEditor({ step, onChange, onRemove, canRemove }: StepEditorPr
             </select>
           </label>
 
-          <label className="flex flex-col text-xs text-gray-500">
+          <div className="flex flex-col text-xs text-gray-500">
             Target Pace
-            <input
-              type="text"
-              value={step.targetPace}
-              onChange={e => update({ targetPace: e.target.value })}
-              /*placeholder="1:30" */
-              className="w-20 mt-0.5 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
-            />
-          </label>
+            {(() => {
+              const { m, s } = parsePaceString(step.targetPace);
+              return (
+                <MinSecInput
+                  minutes={m}
+                  seconds={s}
+                  onChange={(mm, ss) => update({ targetPace: formatPace(mm, ss) })}
+                />
+              );
+            })()}
+          </div>
 
           <label className="flex flex-col items-center text-xs text-gray-500" title="Untick for drills / kick (exported as Garmin drill stroke)">
             Track?
@@ -124,17 +177,25 @@ export function StepEditor({ step, onChange, onRemove, canRemove }: StepEditorPr
           </label>
 
           {step.restType !== 'lap_button' && (
-            <label className="flex flex-col text-xs text-gray-500">
-              {step.restType === 'rest' ? 'Fixed (sec)' : 'Sendoff (sec)'}
-              <input
-                type="number"
-                min={0}
-                step={5}
-                value={step.restValue}
-                onChange={e => update({ restValue: Number(e.target.value) })}
-                className="w-20 mt-0.5 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
-              />
-            </label>
+            <div className="flex flex-col text-xs text-gray-500">
+              {step.restType === 'rest' ? 'Fixed' : 'Sendoff'}
+              {(() => {
+                const { m, s } = parseMinSec(step.restValue);
+                return (
+                  <MinSecInput
+                    minutes={m}
+                    seconds={s}
+                    onChange={(mm, ss) => update({ restValue: mm * 60 + ss })}
+                  />
+                );
+              })()}
+            </div>
+          )}
+
+          {step.repetitions === 1 && (step.restType === 'lap_button' || step.restValue > 0) && (
+            <span className="text-xs text-amber-600 self-end pb-1.5">
+              Ignored — between-step rest is always lap-press.
+            </span>
           )}
         </div>
       </div>

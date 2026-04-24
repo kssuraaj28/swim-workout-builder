@@ -25,7 +25,6 @@ export function createDefaultSet(): WorkoutSet {
     name: '',
     iterations: 1,
     steps: [createDefaultStep()],
-    restAfterSet: 60,
   };
 }
 

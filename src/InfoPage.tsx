@@ -28,7 +28,7 @@ export function InfoPage({ mode, onModeChange }: Props) {
           <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
             <li>Workouts are identified by name + creation date — duplicates only warn when both match.</li>
             <li>Save stores the workout in the sidebar library; load by clicking an entry.</li>
-            <li>Insert from Library drops a copy of a saved set template into the workout.</li>
+            {ENABLE_SET_BUILDER && <li>Insert from Library drops a copy of a saved set template into the workout.</li>}
           </ul>
         </Card>
 
@@ -60,6 +60,16 @@ export function InfoPage({ mode, onModeChange }: Props) {
             </ul>
           </Card>
         )}
+
+        <Card>
+          <h3 className="text-base font-semibold text-gray-900 mb-2">Open source</h3>
+          <p className="text-sm text-gray-700">
+            This app is open source. Find the code{' '}
+            <ExternalLink href="https://github.com/kssuraaj28/swim-workout-builder">
+              here
+            </ExternalLink>.
+          </p>
+        </Card>
       </main>
     </div>
   );

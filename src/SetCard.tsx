@@ -40,19 +40,7 @@ export function SetCard({ set, index, onChange, onRemove, onMoveUp, onMoveDown, 
           />
         </label>
 
-        <label className="flex items-center gap-1 text-sm text-gray-600 ml-auto">
-          Rest after set (sec)
-          <input
-            type="number"
-            min={0}
-            step={5}
-            value={set.restAfterSet}
-            onChange={e => onChange({ ...set, restAfterSet: Number(e.target.value) })}
-            className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-          />
-        </label>
-
-        <div className="flex gap-1">
+        <div className="flex gap-1 ml-auto">
           <button onClick={onMoveUp} disabled={isFirst} className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-sm px-1" title="Move up">&uarr;</button>
           <button onClick={onMoveDown} disabled={isLast} className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-sm px-1" title="Move down">&darr;</button>
           <button onClick={onRemove} className="text-red-400 hover:text-red-600 text-sm px-1" title="Remove set">&times;</button>

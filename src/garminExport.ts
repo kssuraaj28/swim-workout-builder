@@ -35,16 +35,15 @@ function buildStepType() {
 
 const NO_DRILL = { drillTypeId: 0, drillTypeKey: null, displayOrder: 0 };
 
-function buildRestStep(seconds: number, childStepId: number | undefined) {
+function buildLapButtonRestStep() {
   return {
     type: 'ExecutableStepDTO',
     stepId: nextStepId(),
     stepOrder: 0, // will be reassigned
     stepType: { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 },
-    ...(childStepId !== undefined && { childStepId }),
-    description: seconds >= 60 ? `Rest for ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : `Rest for 0:${String(seconds).padStart(2, '0')}`,
-    endCondition: { conditionTypeId: 8, conditionTypeKey: 'fixed.rest', displayOrder: 8, displayable: true },
-    endConditionValue: seconds,
+    description: 'Rest until lap press',
+    endCondition: { conditionTypeId: 1, conditionTypeKey: 'lap.button', displayOrder: 1, displayable: true },
+    endConditionValue: 200,
     strokeType: { strokeTypeId: 0, displayOrder: 0 },
     equipmentType: { equipmentTypeId: 0, displayOrder: 0 },
   };
@@ -110,17 +109,17 @@ export function exportToGarmin(workout: Workout): object {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const innerSteps: any[] = [];
     for (const step of set.steps) {
-      const needsRest = step.restType === 'lap_button' || step.restValue > 0;
+      const needsWithinRest = step.restType === 'lap_button' || step.restValue > 0;
 
       if (step.repetitions > 1) {
-        // Wrap in a nested repeat group
+        // Wrap in a nested repeat group — step's own rest applies between its internal repetitions
         const nestedChildId = childStepIdCounter++;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nestedSteps: any[] = [];
         const exec = buildExecutableStep(step, nestedChildId, workout.poolLengthUnit);
         exec.stepOrder = stepOrder++;
         nestedSteps.push(exec);
-        if (needsRest) {
+        if (needsWithinRest) {
           const rest = buildStepRest(step, nestedChildId);
           rest.stepOrder = stepOrder++;
           nestedSteps.push(rest);
@@ -135,21 +134,19 @@ export function exportToGarmin(workout: Workout): object {
           workoutSteps: nestedSteps,
           endConditionValue: step.repetitions,
           endCondition: { conditionTypeId: 7, conditionTypeKey: 'iterations', displayOrder: 7, displayable: false },
-          skipLastRestStep: false,
+          skipLastRestStep: true,
           smartRepeat: false,
         });
       } else {
         const execStep = buildExecutableStep(step, childStepId, workout.poolLengthUnit);
         execStep.stepOrder = stepOrder++;
         innerSteps.push(execStep);
-
-        if (needsRest) {
-          const rest = buildStepRest(step, childStepId);
-          rest.stepOrder = stepOrder++;
-          innerSteps.push(rest);
-        }
       }
 
+      // Lap-button rest between steps within the set (skipLastRestStep drops it on the set's final iteration)
+      const betweenRest = buildLapButtonRestStep();
+      betweenRest.stepOrder = stepOrder++;
+      innerSteps.push(betweenRest);
     }
 
     const repeatGroup = {
@@ -168,12 +165,10 @@ export function exportToGarmin(workout: Workout): object {
 
     workoutSteps.push(repeatGroup);
 
-    // Rest after set
-    if (set.restAfterSet > 0) {
-      const setRest = buildRestStep(set.restAfterSet, undefined);
-      setRest.stepOrder = stepOrder++;
-      workoutSteps.push(setRest);
-    }
+    // Lap-button rest after every set
+    const setRest = buildLapButtonRestStep();
+    setRest.stepOrder = stepOrder++;
+    workoutSteps.push(setRest);
   }
 
   return {
