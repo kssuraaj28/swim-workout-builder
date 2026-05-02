@@ -30,7 +30,7 @@ function nextStepId(): number {
 }
 
 function buildStepType() {
-  return { stepTypeId: 7, stepTypeKey: 'other', displayOrder: 7 };
+  return { stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 };
 }
 
 const NO_DRILL = { drillTypeId: 0, drillTypeKey: null, displayOrder: 0 };
