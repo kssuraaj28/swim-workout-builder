@@ -11,6 +11,12 @@ import {
 } from './types';
 import { calcTotalDistance } from './utils';
 
+// DTO = Data Transfer Object. Garmin's workout-step DTOs (ExecutableStepDTO, RepeatGroupDTO)
+// have many fields with heterogeneous types. We don't model the full schema in TypeScript —
+// this loose type just lets us collect a mixed array of step objects without losing too much
+// safety to `any[]`.
+type Dto = Record<string, unknown>;
+
 const EQUIPMENT_CODE: Record<EquipmentType, string | null> = {
   none: null,
   fins: 'FIN',
@@ -109,8 +115,7 @@ export function exportToGarmin(workout: Workout): object {
   stepIdCounter = 0;
   const poolUnit = POOL_UNIT_MAP[workout.poolLengthUnit];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const workoutSteps: any[] = [];
+  const workoutSteps: Dto[] = [];
   let stepOrder = 1;
   let childStepIdCounter = 1;
 
@@ -118,8 +123,7 @@ export function exportToGarmin(workout: Workout): object {
     const childStepId = childStepIdCounter++;
 
     // Build inner steps for the repeat group
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const innerSteps: any[] = [];
+    const innerSteps: Dto[] = [];
     for (let stepIdx = 0; stepIdx < set.steps.length; stepIdx++) {
       const step = set.steps[stepIdx];
       const isLastStepInSet = stepIdx === set.steps.length - 1;
@@ -128,8 +132,7 @@ export function exportToGarmin(workout: Workout): object {
       if (step.repetitions > 1) {
         // Wrap in a nested repeat group — step's own rest applies between its internal repetitions
         const nestedChildId = childStepIdCounter++;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const nestedSteps: any[] = [];
+        const nestedSteps: Dto[] = [];
         const exec = buildExecutableStep(step, nestedChildId, workout.poolLengthUnit);
         exec.stepOrder = stepOrder++;
         nestedSteps.push(exec);
