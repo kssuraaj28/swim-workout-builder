@@ -21,3 +21,33 @@
      flag that excludes them from distance totals. Try: omit the rest
      steps entirely and confirm the total matches; then reintroduce
      them with a corrected shape.
+
+- Garmin-side bug (unit handling on round-trip) — NOT fixable from our
+  code, file as a complaint to Garmin:
+   - Workout X is really 2500 yd.
+   - Original (sourced from MySwimPro) on Garmin Connect: website shows
+     2286 yd; watch shows 2500 yd correctly.
+   - After downloading from Garmin Connect and re-uploading the same
+     file: website shows 2500 yd; watch now shows 2734 yd.
+   - Diffed before (old.json) vs. after (new.json). Per-step distances
+     are byte-identical. Only meaningful payload change:
+       estimatedDistanceInMeters: 2286 -> 2500
+     i.e. Garmin converted m -> yd (2286 * 1.0936 = 2500) and wrote the
+     yd value back into the meters-named field on re-upload. The watch
+     then reads it as meters again -> 2500 m -> 2734 yd display.
+   - Side observations during the round-trip (also Garmin's doing):
+       * consumer / consumerName / workoutProvider get nulled out.
+       * Description em-dashes get mojibaked (UTF-8 reinterpreted as
+         Latin-1: "—" -> "â").
+       * stepIds get reassigned.
+   - Our code is not in the loop for this round-trip; do NOT try to
+     "fix" it in garminExport.ts.
+
+- Separate question (independent of the round-trip bug): what should
+  our exporter put in `estimatedDistanceInMeters`? Currently we put the
+  raw pool-unit total (2500 for a 2500 yd workout) per the comment in
+  src/garminExport.ts. MySwimPro puts the actual meters value (2286).
+  Worth testing whether switching to actual meters makes our originated
+  workouts display correctly on the watch (since post-roundtrip files
+  with raw-yd values display 2734 on the watch — our exports may have
+  the same problem from the start).
