@@ -20,7 +20,15 @@ const EQUIPMENT_CODE: Record<EquipmentType, string | null> = {
   snorkel: 'SNK',
 };
 
+// We don't use Garmin's per-step equipmentType field — Garmin only allows one equipment per step,
+// and our steps can have several. Equipment is encoded into the step description instead (see
+// EQUIPMENT_CODE and buildExecutableStep), so equipmentType on every step is left as "none".
 const NO_EQUIPMENT = { equipmentTypeId: 0, displayOrder: 0 };
+const NO_STROKE = { strokeTypeId: 0, displayOrder: 0 };
+const NO_DRILL = { drillTypeId: 0, drillTypeKey: null, displayOrder: 0 };
+const NO_TARGET = { workoutTargetTypeId: 1, workoutTargetTypeKey: 'no.target', displayOrder: 1 };
+const REST_STEP_TYPE = { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 };
+const INTERVAL_STEP_TYPE = { stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 };
 
 const STEP_ID_BASE = 12834535360;
 let stepIdCounter = 0;
@@ -29,23 +37,24 @@ function nextStepId(): number {
   return STEP_ID_BASE + stepIdCounter++;
 }
 
-function buildStepType() {
-  return { stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 };
-}
-
-const NO_DRILL = { drillTypeId: 0, drillTypeKey: null, displayOrder: 0 };
-
 function buildLapButtonRestStep() {
   return {
     type: 'ExecutableStepDTO',
     stepId: nextStepId(),
     stepOrder: 0, // will be reassigned
-    stepType: { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 },
+    stepType: REST_STEP_TYPE,
     description: 'Rest until lap press',
     endCondition: { conditionTypeId: 1, conditionTypeKey: 'lap.button', displayOrder: 1, displayable: true },
-    endConditionValue: 200,
-    strokeType: { strokeTypeId: 0, displayOrder: 0 },
-    equipmentType: { equipmentTypeId: 0, displayOrder: 0 },
+    // Garmin upload bug: Garmin Connect UI uses endConditionValue: 200 for
+    // lap.button rests (canonical value, confirmed by inspecting a UI-created workout) 
+    // The value is otherwise meaningless, and actually actively confusing.
+    //
+    // Moreover, when uploading the json, this value gets added to total distance.
+    // We set it to 0.
+    endConditionValue: 0,
+    strokeType: NO_STROKE,
+    equipmentType: NO_EQUIPMENT,
+    targetType: NO_TARGET,
   };
 }
 
@@ -60,12 +69,14 @@ function buildStepRest(step: WorkoutStep, childStepId: number) {
     type: 'ExecutableStepDTO',
     stepId: nextStepId(),
     stepOrder: 0,
-    stepType: { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 },
+    stepType: REST_STEP_TYPE,
     childStepId: childStepId,
     endCondition: endConditionMap[step.restType],
-    endConditionValue: step.restType === 'lap_button' ? 200 : step.restValue,
-    strokeType: { strokeTypeId: 0, displayOrder: 0 },
-    equipmentType: { equipmentTypeId: 0, displayOrder: 0 },
+    // For lap_button rests, send 0 (not step.restValue) — see buildLapButtonRestStep for why.
+    endConditionValue: step.restType === 'lap_button' ? 0 : step.restValue,
+    strokeType: NO_STROKE,
+    equipmentType: NO_EQUIPMENT,
+    targetType: NO_TARGET,
   };
 }
 
@@ -79,7 +90,7 @@ function buildExecutableStep(step: WorkoutStep, childStepId: number, poolUnit: s
     type: 'ExecutableStepDTO',
     stepId: nextStepId(),
     stepOrder: 0,
-    stepType: buildStepType(),
+    stepType: INTERVAL_STEP_TYPE,
     childStepId: childStepId,
     ...(description && { description, notes: description }),
     endCondition: { conditionTypeId: 3, conditionTypeKey: 'distance', displayOrder: 3, displayable: true },
@@ -90,6 +101,7 @@ function buildExecutableStep(step: WorkoutStep, childStepId: number, poolUnit: s
     drillType: step.track
       ? NO_DRILL
       : { drillTypeId: DRILL_SUBTYPE.id, drillTypeKey: DRILL_SUBTYPE.key, displayOrder: DRILL_SUBTYPE.displayOrder },
+    targetType: NO_TARGET,
   };
 }
 

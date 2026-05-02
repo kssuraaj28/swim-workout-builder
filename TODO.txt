@@ -1,26 +1,19 @@
-- Fix Garmin export: total distance reported is weird
-   - Repro: a 1250-yard workout shows up in Garmin as 3750 yards.
-   - `estimatedDistanceInMeters` in src/garminExport.ts is set from
-     calcTotalDistance(workout), which matches the intended total — so
-     Garmin is likely recomputing from the step structure and getting
-     a 3x figure.
-   - Suspects:
-       a) The nested per-step RepeatGroupDTO (step.repetitions > 1) may
-          be counted in addition to the executable step rather than
-          containing it.
-       b) All single-rep executable steps in a set share the same
-          childStepId (the set's). If Garmin treats childStepId as a
-          grouping key, this could multiply the count.
-       c) estimatedDistanceInMeters / estimatedDistanceUnit shape may be
-          wrong, causing Garmin to ignore it and recompute.
-   - Strong lead: the inflation appears tied to the lap-button rest
-     steps we now emit between steps and after each set. The rest
-     ExecutableStepDTOs may be getting counted as distance even though
-     their endCondition is lap.button (not distance) — possibly because
-     they reuse `strokeType`/`equipmentType` fields or are missing a
-     flag that excludes them from distance totals. Try: omit the rest
-     steps entirely and confirm the total matches; then reintroduce
-     them with a corrected shape.
+- [FIXED] Garmin export: total distance reported is inflated.
+   - Root cause: Garmin's JSON upload pipeline silently strips the
+     top-level `estimateType` and `estimatedDurationInSecs` fields,
+     then recomputes the displayed total from the step structure and
+     incorrectly sums each lap.button rest's `endConditionValue` into
+     the total. Confirmed by re-uploading a Garmin-UI-created baseline
+     workout (Baseline.json): 1100yd -> 1500yd (+400 = 2 lap.button
+     rests * 200). Same math holds for our workouts (4 * 200 = +800).
+   - Workaround in src/garminExport.ts: emit `endConditionValue: 0`
+     for lap.button rests instead of the canonical 200. Field is
+     meaningless for lap.button (rest ends on button press), so 0 is
+     functionally fine and short-circuits Garmin's buggy recompute.
+   - Editing-and-saving the workout in Garmin's web UI also fixes
+     the displayed total (it re-sets estimateType), but we can't
+     ask users to do that for every upload.
+   - Should still be filed with Garmin as an upstream bug.
 
 - Garmin-side bug (unit handling on round-trip) — NOT fixable from our
   code, file as a complaint to Garmin:
