@@ -124,9 +124,7 @@ export function exportToGarmin(workout: Workout): object {
 
     // Build inner steps for the repeat group
     const innerSteps: Dto[] = [];
-    for (let stepIdx = 0; stepIdx < set.steps.length; stepIdx++) {
-      const step = set.steps[stepIdx];
-      const isLastStepInSet = stepIdx === set.steps.length - 1;
+    for (const step of set.steps) {
       const needsWithinRest = step.restType === 'lap_button' || step.restValue > 0;
 
       if (step.repetitions > 1) {
@@ -160,12 +158,12 @@ export function exportToGarmin(workout: Workout): object {
         innerSteps.push(execStep);
       }
 
-      // Lap-button rest between steps within the set — skip after the last step
-      if (!isLastStepInSet) {
-        const betweenRest = buildLapButtonRestStep();
-        betweenRest.stepOrder = stepOrder++;
-        innerSteps.push(betweenRest);
-      }
+      // Lap-button rest after every step within the set. The outer repeat group has
+      // skipLastRestStep: true, so Garmin drops the trailing rest on the final iteration —
+      // the explicit setRest after the repeat group takes its place.
+      const betweenRest = buildLapButtonRestStep();
+      betweenRest.stepOrder = stepOrder++;
+      innerSteps.push(betweenRest);
     }
 
     const repeatGroup = {
@@ -178,7 +176,7 @@ export function exportToGarmin(workout: Workout): object {
       workoutSteps: innerSteps,
       endConditionValue: set.iterations,
       endCondition: { conditionTypeId: 7, conditionTypeKey: 'iterations', displayOrder: 7, displayable: false },
-      skipLastRestStep: false,
+      skipLastRestStep: true,
       smartRepeat: false,
     };
 
