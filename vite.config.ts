@@ -1,8 +1,24 @@
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Build identifier shown in the UI so we can tell which commit is live.
+// TODO: pair this with a human-readable version number (e.g. from package.json)
+// once we start cutting releases.
+function gitShortSha(): string {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
 export default defineConfig({
+  define: {
+    __BUILD_SHA__: JSON.stringify(gitShortSha()),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   plugins: [react(), tailwindcss()],
   // Relative asset paths so the built site works at any URL path (root, subfolder, etc.)
   // without knowing its mount point at build time.

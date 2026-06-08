@@ -17,7 +17,7 @@ interface HeaderProps {
 export function Header({ mode, onModeChange }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm no-print sticky top-0 z-20">
-      <div className={`max-w-5xl mx-auto px-4 ${HEADER_HEIGHT_CLASS} flex items-center`}>
+      <div className={`max-w-5xl mx-auto px-4 ${HEADER_HEIGHT_CLASS} flex items-center justify-between`}>
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-gray-900">Swim Workout Builder</h1>
           <div className="ml-4 flex rounded-lg border border-gray-300 overflow-hidden">
@@ -28,6 +28,12 @@ export function Header({ mode, onModeChange }: HeaderProps) {
             <ModeButton label="Info" active={mode === 'info'} onClick={() => onModeChange('info')} borderLeft />
           </div>
         </div>
+        <span
+          className="text-xs text-gray-400 font-mono"
+          title={`Built ${__BUILD_DATE__}`}
+        >
+          {__BUILD_SHA__}
+        </span>
       </div>
     </header>
   );
