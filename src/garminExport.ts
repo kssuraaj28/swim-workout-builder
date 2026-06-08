@@ -202,8 +202,7 @@ export function exportToGarmin(workout: Workout): object {
     poolLength: workout.poolLength,
     poolLengthUnit: poolUnit,
     avgTrainingSpeed: 0,
-    // Garmin quirk: despite the name, this field expects the raw distance in pool units, not meters.
-    estimatedDistanceInMeters: calcTotalDistance(workout),
+    estimatedDistanceInMeters: calcTotalDistance(workout) * (poolUnit.factor / 100),
     estimatedDistanceUnit: {},
     shared: false,
   };
