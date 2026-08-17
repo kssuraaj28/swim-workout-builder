@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Workout, WorkoutKey } from '../core/types';
-import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from '../core/utils';
-import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library';
-import { SetCard } from './set-card';
-import { WorkoutPreview } from './workout-preview';
-import { WorkoutLibrary } from './workout-library';
-import { exportToGarmin } from '../core/garmin-export';
-import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header';
+import type { Workout, WorkoutKey } from '../core/types.ts';
+import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from '../core/utils.ts';
+import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
+import { SetCard } from './set-card.tsx';
+import { WorkoutPreview } from './workout-preview.tsx';
+import { WorkoutLibrary } from './workout-library.tsx';
+import { exportToGarmin } from '../core/garmin-export.ts';
+import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
 
 interface Props {
   workout: Workout;

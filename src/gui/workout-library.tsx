@@ -1,5 +1,5 @@
-import type { Workout, WorkoutKey } from '../core/types';
-import { calcTotalDistance } from '../core/utils';
+import type { Workout, WorkoutKey } from '../core/types.ts';
+import { calcTotalDistance } from '../core/utils.ts';
 
 interface WorkoutLibraryProps {
   workouts: Workout[];

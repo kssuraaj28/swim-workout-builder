@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Header, type AppMode } from './header';
-import type { Workout } from '../core/types';
-import type { AppState } from '../core/state';
-import { createEmptyState } from '../core/state';
-import { WorkoutBuilder } from './workout-builder';
-import { InfoPage } from './info-page';
-import { downloadState } from './import-export';
+import { Header, type AppMode } from './header.tsx';
+import type { Workout } from '../core/types.ts';
+import type { AppState } from '../core/state.ts';
+import { createEmptyState } from '../core/state.ts';
+import { WorkoutBuilder } from './workout-builder.tsx';
+import { InfoPage } from './info-page.tsx';
+import { downloadState } from './import-export.ts';
 
 function App() {
   const [mode, setMode] = useState<AppMode>('workout');

@@ -1,5 +1,5 @@
-import type { AppState } from '../core/state';
-import { decodeState, encodeState } from '../core/state';
+import type { AppState } from '../core/state.ts';
+import { decodeState, encodeState } from '../core/state.ts';
 
 export const FILE_NAME = 'swimstate.cbor';
 

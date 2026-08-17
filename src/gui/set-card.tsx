@@ -1,6 +1,6 @@
-import type { WorkoutSet } from '../core/types';
-import { StepEditor } from './step-editor';
-import { createDefaultStep } from '../core/utils';
+import type { WorkoutSet } from '../core/types.ts';
+import { StepEditor } from './step-editor.tsx';
+import { createDefaultStep } from '../core/utils.ts';
 
 interface SetCardProps {
   set: WorkoutSet;

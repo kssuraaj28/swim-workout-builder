@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import type { AppState } from '../core/state';
-import { FILE_NAME, readStateFromFile } from './import-export';
+import type { AppState } from '../core/state.ts';
+import { FILE_NAME, readStateFromFile } from './import-export.ts';
 
 export type AppMode = 'workout' | 'info';
 

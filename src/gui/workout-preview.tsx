@@ -1,9 +1,6 @@
-import type { Workout, WorkoutStep } from '../core/types';
-import {
-  STROKE_LABELS,
-  EQUIPMENT_LABELS,
-} from '../core/types';
-import { formatTime, calcTotalDistance } from '../core/utils';
+import type { Workout, WorkoutStep } from '../core/types.ts';
+import { STROKE_LABELS, EQUIPMENT_LABELS } from '../core/types.ts';
+import { formatTime, calcTotalDistance, calcSetBaseDistance } from '../core/utils.ts';
 
 function stepSummary(step: WorkoutStep, unit: string): string {
   const parts: string[] = [];
@@ -38,7 +35,7 @@ export function WorkoutPreview({ workout }: { workout: Workout }) {
       </div>
 
       {workout.sets.map((set, i) => {
-        const setDist = set.steps.reduce((d, s) => d + s.distance * s.repetitions, 0);
+        const setDist = calcSetBaseDistance(set);
         return (
           <div key={set.id} className="border-l-2 border-gray-300 pl-3">
             <div className="font-semibold text-gray-700 text-xs uppercase tracking-wide mb-1">
