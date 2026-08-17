@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
-import type { Workout, WorkoutSet } from './types';
+import type { Workout } from './types';
 import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from './utils';
 import { loadLibrary, saveWorkoutToLibrary, deleteFromLibrary, DuplicateWorkoutError, type WorkoutKey } from './library';
-import { loadSetLibrary } from './setLibrary';
 import { SetCard } from './SetCard';
 import { WorkoutPreview } from './WorkoutPreview';
 import { WorkoutLibrary } from './WorkoutLibrary';
-import { InsertSetDialog } from './InsertSetDialog';
 import { exportToGarmin } from './garminExport';
-import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, ENABLE_SET_BUILDER, type AppMode } from './Header';
+import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type AppMode } from './Header';
 
 const CURRENT_KEY = 'swim-workout-builder-current';
 
@@ -32,10 +30,7 @@ interface Props {
 export function WorkoutBuilder({ mode, onModeChange }: Props) {
   const [workout, setWorkout] = useState<Workout>(() => loadCurrent() || createDefaultWorkout());
   const [library, setLibrary] = useState<Workout[]>(() => loadLibrary());
-  // Set templates are read-only here — used only to populate the Insert dialog. Reload each mount.
-  const [setTemplates] = useState(() => loadSetLibrary());
   const [showPreview, setShowPreview] = useState(false);
-  const [insertingSet, setInsertingSet] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
 
   useEffect(() => {
@@ -115,11 +110,6 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
     if (workout.name === key.name && workout.createdAt === key.createdAt) {
       setWorkout(createDefaultWorkout());
     }
-  };
-
-  const handleInsertSetFromLibrary = (set: WorkoutSet) => {
-    updateSets([...workout.sets, set]);
-    setInsertingSet(false);
   };
 
   const totalDist = calcTotalDistance(workout);
@@ -257,28 +247,12 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                 >
                   + Add Set
                 </button>
-                {ENABLE_SET_BUILDER && (
-                  <button
-                    onClick={() => setInsertingSet(true)}
-                    className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300"
-                  >
-                    + Insert from Library
-                  </button>
-                )}
               </div>
             </div>
           )}
           </main>
         </div>
       </div>
-
-      {insertingSet && (
-        <InsertSetDialog
-          templates={setTemplates}
-          onInsert={handleInsertSetFromLibrary}
-          onClose={() => setInsertingSet(false)}
-        />
-      )}
     </div>
   );
 }

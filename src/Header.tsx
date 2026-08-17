@@ -1,8 +1,4 @@
-export type AppMode = 'workout' | 'set' | 'info';
-
-// Flip to true to re-enable the Build Set tab and route.
-// TODO: This is WIP
-export const ENABLE_SET_BUILDER = false;
+export type AppMode = 'workout' | 'info';
 
 /** Header height — kept in sync with `h-14` so sidebars can offset their sticky position. */
 export const HEADER_HEIGHT_CLASS = 'h-14';
@@ -22,9 +18,6 @@ export function Header({ mode, onModeChange }: HeaderProps) {
           <h1 className="text-xl font-bold text-gray-900">Swim Workout Builder</h1>
           <div className="ml-4 flex rounded-lg border border-gray-300 overflow-hidden">
             <ModeButton label="Build Workout" active={mode === 'workout'} onClick={() => onModeChange('workout')} />
-            {ENABLE_SET_BUILDER && (
-              <ModeButton label="Build Set" active={mode === 'set'} onClick={() => onModeChange('set')} borderLeft />
-            )}
             <ModeButton label="Info" active={mode === 'info'} onClick={() => onModeChange('info')} borderLeft />
           </div>
         </div>

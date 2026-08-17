@@ -24,19 +24,6 @@ export interface WorkoutSet {
   steps: WorkoutStep[];
 }
 
-export type SetParamKey = 'stroke' | 'distance' | 'iterations';
-
-export interface SetTemplate {
-  id: string;
-  title: string;
-  tags: string[];
-  notes?: string;
-  set: WorkoutSet;
-  params: SetParamKey[];
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Workout {
   name: string;
   /** YYYY-MM-DD. Together with `name`, forms the workout's identity in the library. User-editable. */

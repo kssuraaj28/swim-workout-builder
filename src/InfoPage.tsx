@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Header, ENABLE_SET_BUILDER, type AppMode } from './Header';
+import { Header, type AppMode } from './Header';
 
 interface Props {
   mode: AppMode;
@@ -28,7 +28,6 @@ export function InfoPage({ mode, onModeChange }: Props) {
           <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
             <li>Workouts are identified by name + creation date — duplicates only warn when both match.</li>
             <li>Save stores the workout in the sidebar library; load by clicking an entry.</li>
-            {ENABLE_SET_BUILDER && <li>Insert from Library drops a copy of a saved set template into the workout.</li>}
           </ul>
         </Card>
 
@@ -45,21 +44,6 @@ export function InfoPage({ mode, onModeChange }: Props) {
             </ExternalLink>.
           </p>
         </Card>
-
-        {ENABLE_SET_BUILDER && (
-          <Card>
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Build Set</h3>
-            <p className="text-sm text-gray-700 mb-3">
-              Author reusable set templates (e.g. "8×100 IM on 1:45") that can be
-              inserted into any workout.
-            </p>
-            <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
-              <li>Mark <code>params</code> on a template to expose stroke / distance / iterations as knobs at insert time.</li>
-              <li>Templates are stored in their own library and persist across sessions.</li>
-              <li>Inserted sets are <em>copies</em> — editing the template later does not retro-update workouts.</li>
-            </ul>
-          </Card>
-        )}
 
         <Card>
           <h3 className="text-base font-semibold text-gray-900 mb-2">Open source</h3>
