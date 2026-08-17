@@ -1,7 +1,7 @@
 import type { AppState } from '../core/state';
 import { decodeState, encodeState } from '../core/state';
 
-export const FILE_NAME = 'swim-workouts.cbor';
+export const FILE_NAME = 'swimstate.cbor';
 
 export function downloadState(state: AppState, fileName = FILE_NAME): void {
   const bytes = encodeState(state);
