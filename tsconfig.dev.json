@@ -1,5 +1,4 @@
-// Type-checks the dev-only code: src/cli, test and vite.config.ts, plus src/core which they import.
-// Node globals, no DOM. src/core is also checked
+// Type-checks what never ships: src/cli, test, vite.config.ts. Node globals, no DOM.
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.dev.tsbuildinfo",

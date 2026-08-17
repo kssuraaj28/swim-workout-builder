@@ -1,5 +1,4 @@
-// Type-checks everything shipped to the browser: src/gui, plus src/core which it imports.
-// DOM globals, no Node globals.
+// Type-checks what ships to the browser: src/gui. DOM globals, no Node globals.
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.website.tsbuildinfo",
