@@ -1,6 +1,5 @@
-import type { Workout } from './types';
-import { calcTotalDistance } from './utils';
-import type { WorkoutKey } from './library';
+import type { Workout, WorkoutKey } from '../core/types';
+import { calcTotalDistance } from '../core/utils';
 
 interface WorkoutLibraryProps {
   workouts: Workout[];

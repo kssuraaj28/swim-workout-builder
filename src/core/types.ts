@@ -35,6 +35,11 @@ export interface Workout {
   savedAt?: string; // ISO date string
 }
 
+export interface WorkoutKey {
+  name: string;
+  createdAt: string;
+}
+
 // Garmin enum mappings
 export const STROKE_TYPE_MAP: Record<StrokeType, { id: number; key: string; displayOrder: number }> = {
   backstroke: { id: 2, key: 'backstroke', displayOrder: 2 },

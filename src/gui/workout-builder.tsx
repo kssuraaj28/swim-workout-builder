@@ -1,43 +1,30 @@
-import { useState, useEffect } from 'react';
-import type { Workout } from './types';
-import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from './utils';
-import { loadLibrary, saveWorkoutToLibrary, deleteFromLibrary, DuplicateWorkoutError, type WorkoutKey } from './library';
-import { SetCard } from './SetCard';
-import { WorkoutPreview } from './WorkoutPreview';
-import { WorkoutLibrary } from './WorkoutLibrary';
-import { exportToGarmin } from './garminExport';
-import { Header, STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type AppMode } from './Header';
-
-const CURRENT_KEY = 'swim-workout-builder-current';
-
-function loadCurrent(): Workout | null {
-  try {
-    const saved = localStorage.getItem(CURRENT_KEY);
-    if (saved) {
-      const parsed: Workout = JSON.parse(saved);
-      if (!parsed.createdAt) parsed.createdAt = todayDateString();
-      return parsed;
-    }
-  } catch { /* ignore */ }
-  return null;
-}
+import { useState } from 'react';
+import type { Workout, WorkoutKey } from '../core/types';
+import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from '../core/utils';
+import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library';
+import { SetCard } from './set-card';
+import { WorkoutPreview } from './workout-preview';
+import { WorkoutLibrary } from './workout-library';
+import { exportToGarmin } from '../core/garmin-export';
+import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header';
 
 interface Props {
-  mode: AppMode;
-  onModeChange: (mode: AppMode) => void;
+  workout: Workout;
+  onWorkoutChange: (workout: Workout) => void;
+  library: Workout[];
+  onLibraryChange: (library: Workout[]) => void;
 }
 
-export function WorkoutBuilder({ mode, onModeChange }: Props) {
-  const [workout, setWorkout] = useState<Workout>(() => loadCurrent() || createDefaultWorkout());
-  const [library, setLibrary] = useState<Workout[]>(() => loadLibrary());
+export function WorkoutBuilder({
+  workout,
+  onWorkoutChange,
+  library,
+  onLibraryChange,
+}: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem(CURRENT_KEY, JSON.stringify(workout));
-  }, [workout]);
-
-  const updateSets = (sets: Workout['sets']) => setWorkout({ ...workout, sets });
+  const updateSets = (sets: Workout['sets']) => onWorkoutChange({ ...workout, sets });
 
   const addSet = () => updateSets([...workout.sets, createDefaultSet()]);
 
@@ -63,9 +50,8 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
 
   const handleSave = () => {
     const commit = (overwrite: boolean) => {
-      const updated = saveWorkoutToLibrary(workout, { overwrite });
-      setLibrary(updated);
-      setWorkout({ ...workout, savedAt: new Date().toISOString() });
+      onLibraryChange(upsertWorkout(library, workout, { overwrite }));
+      onWorkoutChange({ ...workout, savedAt: new Date().toISOString() });
     };
     try {
       commit(false);
@@ -80,23 +66,22 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
 
   const handleNew = () => {
     if (workout.sets.length > 0 && !confirm('Start a new workout? Unsaved changes will be lost.')) return;
-    setWorkout(createDefaultWorkout());
+    onWorkoutChange(createDefaultWorkout());
   };
 
   const handleSelectFromLibrary = (w: Workout) => {
-    const sameKey = workout.name === w.name && workout.createdAt === w.createdAt;
     if (
       workout.sets.length > 0 &&
-      !sameKey &&
+      !sameKey(workout, w) &&
       !confirm('Load this workout? Unsaved changes will be lost.')
     ) {
       return;
     }
-    setWorkout(w);
+    onWorkoutChange(w);
   };
 
   const handleCloneFromLibrary = (w: Workout) => {
-    setWorkout({
+    onWorkoutChange({
       ...w,
       name: `${w.name || 'Workout'} (copy)`,
       createdAt: todayDateString(),
@@ -105,20 +90,14 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
   };
 
   const handleDeleteFromLibrary = (key: WorkoutKey) => {
-    const updated = deleteFromLibrary(key);
-    setLibrary(updated);
-    if (workout.name === key.name && workout.createdAt === key.createdAt) {
-      setWorkout(createDefaultWorkout());
-    }
+    onLibraryChange(removeWorkout(library, key));
+    if (sameKey(workout, key)) onWorkoutChange(createDefaultWorkout());
   };
 
   const totalDist = calcTotalDistance(workout);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header mode={mode} onModeChange={onModeChange} />
-
-      <div className="flex">
+    <div className="flex">
         <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
           <WorkoutLibrary
             workouts={library}
@@ -131,7 +110,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
 
         <div className="flex-1 min-w-0">
           <main className="max-w-5xl mx-auto px-4 py-6">
-          <div className="flex gap-2 flex-wrap mb-4">
+          <div className="flex gap-2 flex-wrap items-center mb-4">
             <button
               onClick={handleNew}
               className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
@@ -142,6 +121,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
               onClick={handleSave}
               disabled={workout.sets.length === 0}
               className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 disabled:opacity-50"
+              title="Add this workout to the library (in memory)"
             >
               Save
             </button>
@@ -173,7 +153,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                     <input
                       type="text"
                       value={workout.name}
-                      onChange={e => setWorkout({ ...workout, name: e.target.value })}
+                      onChange={e => onWorkoutChange({ ...workout, name: e.target.value })}
                       placeholder="e.g. Swim Workout"
                       className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
                     />
@@ -183,7 +163,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                     <input
                       type="date"
                       value={workout.createdAt}
-                      onChange={e => setWorkout({ ...workout, createdAt: e.target.value })}
+                      onChange={e => onWorkoutChange({ ...workout, createdAt: e.target.value })}
                       className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
                     />
                   </label>
@@ -193,7 +173,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                       value={`${workout.poolLength}-${workout.poolLengthUnit}`}
                       onChange={e => {
                         const [len, unit] = e.target.value.split('-');
-                        setWorkout({ ...workout, poolLength: Number(len), poolLengthUnit: unit as 'yard' | 'meter' });
+                        onWorkoutChange({ ...workout, poolLength: Number(len), poolLengthUnit: unit as 'yard' | 'meter' });
                       }}
                       className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
                     >
@@ -207,7 +187,7 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
                   Description
                   <textarea
                     value={workout.description}
-                    onChange={e => setWorkout({ ...workout, description: e.target.value })}
+                    onChange={e => onWorkoutChange({ ...workout, description: e.target.value })}
                     placeholder="Workout description..."
                     rows={2}
                     className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 resize-none"
@@ -252,7 +232,6 @@ export function WorkoutBuilder({ mode, onModeChange }: Props) {
           )}
           </main>
         </div>
-      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
-import type { Workout, WorkoutStep } from './types';
+import type { Workout, WorkoutStep } from '../core/types';
 import {
   STROKE_LABELS,
   EQUIPMENT_LABELS,
-} from './types';
-import { formatTime, calcTotalDistance } from './utils';
+} from '../core/types';
+import { formatTime, calcTotalDistance } from '../core/utils';
 
 function stepSummary(step: WorkoutStep, unit: string): string {
   const parts: string[] = [];

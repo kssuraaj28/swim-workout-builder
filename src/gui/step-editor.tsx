@@ -3,11 +3,11 @@ import type {
   StrokeType,
   EquipmentType,
   RestType,
-} from './types';
+} from '../core/types';
 import {
   STROKE_LABELS,
   EQUIPMENT_LABELS,
-} from './types';
+} from '../core/types';
 
 interface StepEditorProps {
   step: WorkoutStep;
