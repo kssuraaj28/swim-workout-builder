@@ -219,7 +219,7 @@ export function WorkoutBuilder({
               <div className="space-y-4">
                 {workout.sets.map((set, i) => (
                   <SetCard
-                    key={set.id}
+                    key={i}
                     set={set}
                     index={i}
                     onChange={updated => {

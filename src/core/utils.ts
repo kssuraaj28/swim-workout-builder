@@ -1,12 +1,7 @@
 import type { Workout, WorkoutSet, WorkoutStep } from './types.ts';
 
-function generateId(): string {
-  return crypto.randomUUID();
-}
-
 export function createDefaultStep(): WorkoutStep {
   return {
-    id: generateId(),
     repetitions: 1,
     strokeType: 'free',
     distance: 100,
@@ -21,7 +16,6 @@ export function createDefaultStep(): WorkoutStep {
 
 export function createDefaultSet(): WorkoutSet {
   return {
-    id: generateId(),
     name: '',
     iterations: 1,
     steps: [createDefaultStep()],

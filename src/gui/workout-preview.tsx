@@ -37,7 +37,7 @@ export function WorkoutPreview({ workout }: { workout: Workout }) {
       {workout.sets.map((set, i) => {
         const setDist = calcSetBaseDistance(set);
         return (
-          <div key={set.id} className="border-l-2 border-gray-300 pl-3">
+          <div key={i} className="border-l-2 border-gray-300 pl-3">
             <div className="font-semibold text-gray-700 text-xs uppercase tracking-wide mb-1">
               {set.name || `Set ${i + 1}`}
               <span className="font-normal text-gray-500 ml-2">
@@ -45,7 +45,7 @@ export function WorkoutPreview({ workout }: { workout: Workout }) {
               </span>
             </div>
             {set.steps.map((step, j) => (
-              <div key={step.id} className="flex gap-2 py-0.5">
+              <div key={j} className="flex gap-2 py-0.5">
                 <span className="text-gray-400 w-4 text-right shrink-0">{j + 1}.</span>
                 <div>
                   <span className="text-gray-800">

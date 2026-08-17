@@ -4,7 +4,6 @@ export type RestType = 'rest' | 'interval' | 'lap_button';
 
 
 export interface WorkoutStep {
-  id: string;
   repetitions: number;
   strokeType: StrokeType;
   distance: number;
@@ -18,7 +17,6 @@ export interface WorkoutStep {
 }
 
 export interface WorkoutSet {
-  id: string;
   name: string;
   iterations: number;
   steps: WorkoutStep[];

@@ -50,7 +50,7 @@ export function SetCard({ set, index, onChange, onRemove, onMoveUp, onMoveDown, 
       <div className="p-3 space-y-2">
         {set.steps.map((step, i) => (
           <StepEditor
-            key={step.id}
+            key={i}
             step={step}
             onChange={updated => {
               const newSteps = [...set.steps];

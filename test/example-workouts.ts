@@ -14,12 +14,10 @@ export function kitchenSinkWorkout(): Workout {
     poolLengthUnit: 'yard',
     sets: [
       {
-        id: 'set-main',
         name: 'Main',
         iterations: 3,
         steps: [
           {
-            id: 'step-repeat-fixed-rest',
             repetitions: 4,
             strokeType: 'free',
             distance: 100,
@@ -31,7 +29,6 @@ export function kitchenSinkWorkout(): Workout {
             restValue: 15,
           },
           {
-            id: 'step-single-interval',
             repetitions: 1,
             strokeType: 'backstroke',
             distance: 200,
@@ -45,12 +42,10 @@ export function kitchenSinkWorkout(): Workout {
         ],
       },
       {
-        id: 'set-drills',
         name: 'Drills',
         iterations: 1,
         steps: [
           {
-            id: 'step-repeat-lap-button-drill',
             repetitions: 2,
             strokeType: 'mixed',
             distance: 50,
@@ -62,7 +57,6 @@ export function kitchenSinkWorkout(): Workout {
             restValue: 0,
           },
           {
-            id: 'step-single-no-rest',
             repetitions: 1,
             strokeType: 'breaststroke',
             distance: 100,
@@ -88,12 +82,10 @@ export function metricWorkout(): Workout {
     poolLengthUnit: 'meter',
     sets: [
       {
-        id: 'set-only',
         name: '',
         iterations: 2,
         steps: [
           {
-            id: 'step-only',
             repetitions: 1,
             strokeType: 'free',
             distance: 200,
