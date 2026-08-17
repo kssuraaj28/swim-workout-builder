@@ -2,28 +2,6 @@
 
 A browser-based tool for building structured swimming workouts and exporting them as Garmin Connect-compatible JSON files.
 
-## Features
-
-- Build workouts with named set groups, each containing one or more steps
-- Configure per-step: distance, repetitions, stroke, intensity, equipment (multi-select), rest intervals, and notes
-- Supports 25 yd, 25 m, and 50 m pools
-- Live total distance calculation
-- Preview mode with a clean, printable workout card
-- Export to Garmin Connect JSON format
-
-## Saving your work
-
-Nothing is stored in the browser — no `localStorage`, no cookies, no server. Closing the tab discards everything.
-
-- **Export** downloads the whole app state — the workout being edited plus the entire library — as a single `swim-workouts.cbor` file.
-- **Import** reads one back, replacing whatever is currently open.
-
-The file is [CBOR](https://cbor.io/) rather than JSON so binary payloads can be embedded later without base64 inflation. It carries a `version` field so the format can change.
-
-Enable "Ask where to save each file" in your browser to overwrite the same file each time instead of accumulating copies in Downloads.
-
-Writing back to a file in place would need the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API), which Firefox has objected to, Safari has never shipped, Brave disables by default, and no mobile browser implements. Download and upload work everywhere.
-
 ## Layout
 
 ```
@@ -43,7 +21,9 @@ Summarise a state file:
 npm run inspect -- swim-workouts.cbor
 ```
 
-Runs directly under Node's built-in TypeScript stripping — no build step. Requires Node 22.6+.
+Runs directly under Node's built-in TypeScript stripping — no build step, no transpiler. Requires Node 23.6+, where stripping is on by default.
+
+This is why `core/` imports carry explicit `.ts` extensions: Node's ESM resolver requires them, while Vite and `tsc` accept them either way.
 
 ## Getting Started
 
