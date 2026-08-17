@@ -2,11 +2,21 @@ import { useState } from 'react';
 import type { Workout, WorkoutKey } from '../core/types.ts';
 import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from '../core/utils.ts';
 import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
+import { buildSetFromCode } from '../core/set-from-code.ts';
 import { SetCard } from './set-card.tsx';
 import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
+
+const STARTER_CODE = `return {
+  name: 'Main Set',
+  iterations: 1,
+  steps: [
+    { repetitions: 5, distance: 200, strokeType: 'free', restType: 'rest', restValue: 20 },
+  ],
+};
+`;
 
 interface Props {
   workout: Workout;
@@ -23,10 +33,16 @@ export function WorkoutBuilder({
 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
+  const [codeDraft, setCodeDraft] = useState<string | null>(null);
 
   const updateSets = (sets: Workout['sets']) => onWorkoutChange({ ...workout, sets });
 
   const addSet = () => updateSets([...workout.sets, createDefaultSet()]);
+
+  const runCodeDraft = () => {
+    updateSets([...workout.sets, buildSetFromCode()]);
+    setCodeDraft(null);
+  };
 
   const moveSet = (index: number, dir: -1 | 1) => {
     const sets = [...workout.sets];
@@ -220,12 +236,53 @@ export function WorkoutBuilder({
                 ))}
               </div>
 
+              {codeDraft !== null && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      New Set from Code
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      Not wired up yet — inserts a fixed 5 &times; 200
+                    </span>
+                  </div>
+                  <textarea
+                    value={codeDraft}
+                    onChange={e => setCodeDraft(e.target.value)}
+                    spellCheck={false}
+                    rows={10}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm resize-y"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={runCodeDraft}
+                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                    >
+                      Run
+                    </button>
+                    <button
+                      onClick={() => setCodeDraft(null)}
+                      className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-center gap-2">
                 <button
                   onClick={addSet}
                   className="px-4 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
                 >
                   + Add Set
+                </button>
+                <button
+                  onClick={() => setCodeDraft(STARTER_CODE)}
+                  disabled={codeDraft !== null}
+                  className="px-4 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 disabled:opacity-50"
+                >
+                  + Add Set from Code
                 </button>
               </div>
             </div>
