@@ -1,4 +1,4 @@
-import type { StrokeType, Workout, WorkoutSet, WorkoutStep } from './types';
+import type { StrokeType, Workout, WorkoutSet, WorkoutStep } from './types.ts';
 
 export function generateId(): string {
   return crypto.randomUUID();

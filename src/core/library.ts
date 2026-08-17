@@ -1,4 +1,4 @@
-import type { Workout, WorkoutKey } from './types';
+import type { Workout, WorkoutKey } from './types.ts';
 
 export class DuplicateWorkoutError extends Error {
   readonly key: WorkoutKey;

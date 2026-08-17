@@ -2,14 +2,14 @@ import type {
   EquipmentType,
   Workout,
   WorkoutStep,
-} from './types';
+} from './types.ts';
 import {
   STROKE_TYPE_MAP,
   DRILL_STROKE,
   DRILL_SUBTYPE,
   POOL_UNIT_MAP,
-} from './types';
-import { calcTotalDistance } from './utils';
+} from './types.ts';
+import { calcTotalDistance } from './utils.ts';
 
 // DTO = Data Transfer Object. Garmin's workout-step DTOs (ExecutableStepDTO, RepeatGroupDTO)
 // have many fields with heterogeneous types. We don't model the full schema in TypeScript —

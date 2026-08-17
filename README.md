@@ -30,9 +30,20 @@ Writing back to a file in place would need the [File System Access API](https://
 src/
   core/   model, distance math, Garmin export, state format — no React, no DOM
   gui/    React components and browser I/O
+  cli/    command-line tools
 ```
 
-`core/` has no browser dependencies, so it can be imported from Node — that's the seam a CLI would use.
+`core/` has no browser dependencies, so `gui/` and `cli/` both import it and neither imports the other.
+
+## CLI
+
+Summarise a state file:
+
+```bash
+npm run inspect -- swim-workouts.cbor
+```
+
+Runs directly under Node's built-in TypeScript stripping — no build step. Requires Node 22.6+.
 
 ## Getting Started
 
