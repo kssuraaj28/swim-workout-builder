@@ -1,0 +1,706 @@
+exports[`kitchen-sink workout exports unchanged 1`] = `
+{
+  "workoutName": "Kitchen Sink",
+  "description": "Exercises every branch of the Garmin exporter.",
+  "sportType": {
+    "sportTypeId": 4,
+    "sportTypeKey": "swimming",
+    "displayOrder": 3
+  },
+  "workoutSegments": [
+    {
+      "segmentOrder": 1,
+      "sportType": {
+        "sportTypeId": 4,
+        "sportTypeKey": "swimming",
+        "displayOrder": 3
+      },
+      "workoutSteps": [
+        {
+          "type": "RepeatGroupDTO",
+          "stepId": 12834535366,
+          "stepOrder": 7,
+          "stepType": {
+            "stepTypeId": 6,
+            "stepTypeKey": "repeat",
+            "displayOrder": 6
+          },
+          "childStepId": 1,
+          "numberOfIterations": 3,
+          "workoutSteps": [
+            {
+              "type": "RepeatGroupDTO",
+              "stepId": 12834535362,
+              "stepOrder": 3,
+              "stepType": {
+                "stepTypeId": 6,
+                "stepTypeKey": "repeat",
+                "displayOrder": 6
+              },
+              "childStepId": 2,
+              "numberOfIterations": 4,
+              "workoutSteps": [
+                {
+                  "type": "ExecutableStepDTO",
+                  "stepId": 12834535360,
+                  "stepOrder": 1,
+                  "stepType": {
+                    "stepTypeId": 3,
+                    "stepTypeKey": "interval",
+                    "displayOrder": 3
+                  },
+                  "childStepId": 2,
+                  "description": "FIN | PDL -- 1:30 -- focus on catch",
+                  "notes": "FIN | PDL -- 1:30 -- focus on catch",
+                  "endCondition": {
+                    "conditionTypeId": 3,
+                    "conditionTypeKey": "distance",
+                    "displayOrder": 3,
+                    "displayable": true
+                  },
+                  "endConditionValue": 100,
+                  "preferredEndConditionUnit": {
+                    "unitId": 230,
+                    "unitKey": "yard",
+                    "factor": 91.44
+                  },
+                  "strokeType": {
+                    "strokeTypeId": 6,
+                    "strokeTypeKey": "free",
+                    "displayOrder": 6
+                  },
+                  "equipmentType": {
+                    "equipmentTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "drillType": {
+                    "drillTypeId": 0,
+                    "drillTypeKey": null,
+                    "displayOrder": 0
+                  },
+                  "targetType": {
+                    "workoutTargetTypeId": 1,
+                    "workoutTargetTypeKey": "no.target",
+                    "displayOrder": 1
+                  }
+                },
+                {
+                  "type": "ExecutableStepDTO",
+                  "stepId": 12834535361,
+                  "stepOrder": 2,
+                  "stepType": {
+                    "stepTypeId": 5,
+                    "stepTypeKey": "rest",
+                    "displayOrder": 5
+                  },
+                  "childStepId": 2,
+                  "endCondition": {
+                    "conditionTypeId": 8,
+                    "conditionTypeKey": "fixed.rest",
+                    "displayOrder": 8,
+                    "displayable": true
+                  },
+                  "endConditionValue": 15,
+                  "strokeType": {
+                    "strokeTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "equipmentType": {
+                    "equipmentTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "targetType": {
+                    "workoutTargetTypeId": 1,
+                    "workoutTargetTypeKey": "no.target",
+                    "displayOrder": 1
+                  }
+                }
+              ],
+              "endConditionValue": 4,
+              "endCondition": {
+                "conditionTypeId": 7,
+                "conditionTypeKey": "iterations",
+                "displayOrder": 7,
+                "displayable": false
+              },
+              "skipLastRestStep": true,
+              "smartRepeat": false
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535363,
+              "stepOrder": 4,
+              "stepType": {
+                "stepTypeId": 5,
+                "stepTypeKey": "rest",
+                "displayOrder": 5
+              },
+              "description": "Rest until lap press",
+              "endCondition": {
+                "conditionTypeId": 1,
+                "conditionTypeKey": "lap.button",
+                "displayOrder": 1,
+                "displayable": true
+              },
+              "endConditionValue": 0,
+              "strokeType": {
+                "strokeTypeId": 0,
+                "displayOrder": 0
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535364,
+              "stepOrder": 5,
+              "stepType": {
+                "stepTypeId": 3,
+                "stepTypeKey": "interval",
+                "displayOrder": 3
+              },
+              "childStepId": 1,
+              "endCondition": {
+                "conditionTypeId": 3,
+                "conditionTypeKey": "distance",
+                "displayOrder": 3,
+                "displayable": true
+              },
+              "endConditionValue": 200,
+              "preferredEndConditionUnit": {
+                "unitId": 230,
+                "unitKey": "yard",
+                "factor": 91.44
+              },
+              "strokeType": {
+                "strokeTypeId": 2,
+                "strokeTypeKey": "backstroke",
+                "displayOrder": 2
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "drillType": {
+                "drillTypeId": 0,
+                "drillTypeKey": null,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535365,
+              "stepOrder": 6,
+              "stepType": {
+                "stepTypeId": 5,
+                "stepTypeKey": "rest",
+                "displayOrder": 5
+              },
+              "description": "Rest until lap press",
+              "endCondition": {
+                "conditionTypeId": 1,
+                "conditionTypeKey": "lap.button",
+                "displayOrder": 1,
+                "displayable": true
+              },
+              "endConditionValue": 0,
+              "strokeType": {
+                "strokeTypeId": 0,
+                "displayOrder": 0
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            }
+          ],
+          "endConditionValue": 3,
+          "endCondition": {
+            "conditionTypeId": 7,
+            "conditionTypeKey": "iterations",
+            "displayOrder": 7,
+            "displayable": false
+          },
+          "skipLastRestStep": true,
+          "smartRepeat": false
+        },
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 12834535367,
+          "stepOrder": 8,
+          "stepType": {
+            "stepTypeId": 5,
+            "stepTypeKey": "rest",
+            "displayOrder": 5
+          },
+          "description": "Rest until lap press",
+          "endCondition": {
+            "conditionTypeId": 1,
+            "conditionTypeKey": "lap.button",
+            "displayOrder": 1,
+            "displayable": true
+          },
+          "endConditionValue": 0,
+          "strokeType": {
+            "strokeTypeId": 0,
+            "displayOrder": 0
+          },
+          "equipmentType": {
+            "equipmentTypeId": 0,
+            "displayOrder": 0
+          },
+          "targetType": {
+            "workoutTargetTypeId": 1,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1
+          }
+        },
+        {
+          "type": "RepeatGroupDTO",
+          "stepId": 12834535374,
+          "stepOrder": 15,
+          "stepType": {
+            "stepTypeId": 6,
+            "stepTypeKey": "repeat",
+            "displayOrder": 6
+          },
+          "childStepId": 3,
+          "numberOfIterations": 1,
+          "workoutSteps": [
+            {
+              "type": "RepeatGroupDTO",
+              "stepId": 12834535370,
+              "stepOrder": 11,
+              "stepType": {
+                "stepTypeId": 6,
+                "stepTypeKey": "repeat",
+                "displayOrder": 6
+              },
+              "childStepId": 4,
+              "numberOfIterations": 2,
+              "workoutSteps": [
+                {
+                  "type": "ExecutableStepDTO",
+                  "stepId": 12834535368,
+                  "stepOrder": 9,
+                  "stepType": {
+                    "stepTypeId": 3,
+                    "stepTypeKey": "interval",
+                    "displayOrder": 3
+                  },
+                  "childStepId": 4,
+                  "description": "SNK -- catch-up",
+                  "notes": "SNK -- catch-up",
+                  "endCondition": {
+                    "conditionTypeId": 3,
+                    "conditionTypeKey": "distance",
+                    "displayOrder": 3,
+                    "displayable": true
+                  },
+                  "endConditionValue": 50,
+                  "preferredEndConditionUnit": {
+                    "unitId": 230,
+                    "unitKey": "yard",
+                    "factor": 91.44
+                  },
+                  "strokeType": {
+                    "strokeTypeId": 4,
+                    "strokeTypeKey": "drill",
+                    "displayOrder": 4
+                  },
+                  "equipmentType": {
+                    "equipmentTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "drillType": {
+                    "drillTypeId": 3,
+                    "drillTypeKey": "drill",
+                    "displayOrder": 3
+                  },
+                  "targetType": {
+                    "workoutTargetTypeId": 1,
+                    "workoutTargetTypeKey": "no.target",
+                    "displayOrder": 1
+                  }
+                },
+                {
+                  "type": "ExecutableStepDTO",
+                  "stepId": 12834535369,
+                  "stepOrder": 10,
+                  "stepType": {
+                    "stepTypeId": 5,
+                    "stepTypeKey": "rest",
+                    "displayOrder": 5
+                  },
+                  "childStepId": 4,
+                  "endCondition": {
+                    "conditionTypeId": 1,
+                    "conditionTypeKey": "lap.button",
+                    "displayOrder": 1,
+                    "displayable": true
+                  },
+                  "endConditionValue": 0,
+                  "strokeType": {
+                    "strokeTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "equipmentType": {
+                    "equipmentTypeId": 0,
+                    "displayOrder": 0
+                  },
+                  "targetType": {
+                    "workoutTargetTypeId": 1,
+                    "workoutTargetTypeKey": "no.target",
+                    "displayOrder": 1
+                  }
+                }
+              ],
+              "endConditionValue": 2,
+              "endCondition": {
+                "conditionTypeId": 7,
+                "conditionTypeKey": "iterations",
+                "displayOrder": 7,
+                "displayable": false
+              },
+              "skipLastRestStep": true,
+              "smartRepeat": false
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535371,
+              "stepOrder": 12,
+              "stepType": {
+                "stepTypeId": 5,
+                "stepTypeKey": "rest",
+                "displayOrder": 5
+              },
+              "description": "Rest until lap press",
+              "endCondition": {
+                "conditionTypeId": 1,
+                "conditionTypeKey": "lap.button",
+                "displayOrder": 1,
+                "displayable": true
+              },
+              "endConditionValue": 0,
+              "strokeType": {
+                "strokeTypeId": 0,
+                "displayOrder": 0
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535372,
+              "stepOrder": 13,
+              "stepType": {
+                "stepTypeId": 3,
+                "stepTypeKey": "interval",
+                "displayOrder": 3
+              },
+              "childStepId": 3,
+              "endCondition": {
+                "conditionTypeId": 3,
+                "conditionTypeKey": "distance",
+                "displayOrder": 3,
+                "displayable": true
+              },
+              "endConditionValue": 100,
+              "preferredEndConditionUnit": {
+                "unitId": 230,
+                "unitKey": "yard",
+                "factor": 91.44
+              },
+              "strokeType": {
+                "strokeTypeId": 3,
+                "strokeTypeKey": "breaststroke",
+                "displayOrder": 3
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "drillType": {
+                "drillTypeId": 0,
+                "drillTypeKey": null,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535373,
+              "stepOrder": 14,
+              "stepType": {
+                "stepTypeId": 5,
+                "stepTypeKey": "rest",
+                "displayOrder": 5
+              },
+              "description": "Rest until lap press",
+              "endCondition": {
+                "conditionTypeId": 1,
+                "conditionTypeKey": "lap.button",
+                "displayOrder": 1,
+                "displayable": true
+              },
+              "endConditionValue": 0,
+              "strokeType": {
+                "strokeTypeId": 0,
+                "displayOrder": 0
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            }
+          ],
+          "endConditionValue": 1,
+          "endCondition": {
+            "conditionTypeId": 7,
+            "conditionTypeKey": "iterations",
+            "displayOrder": 7,
+            "displayable": false
+          },
+          "skipLastRestStep": true,
+          "smartRepeat": false
+        },
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 12834535375,
+          "stepOrder": 16,
+          "stepType": {
+            "stepTypeId": 5,
+            "stepTypeKey": "rest",
+            "displayOrder": 5
+          },
+          "description": "Rest until lap press",
+          "endCondition": {
+            "conditionTypeId": 1,
+            "conditionTypeKey": "lap.button",
+            "displayOrder": 1,
+            "displayable": true
+          },
+          "endConditionValue": 0,
+          "strokeType": {
+            "strokeTypeId": 0,
+            "displayOrder": 0
+          },
+          "equipmentType": {
+            "equipmentTypeId": 0,
+            "displayOrder": 0
+          },
+          "targetType": {
+            "workoutTargetTypeId": 1,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1
+          }
+        }
+      ]
+    }
+  ],
+  "poolLength": 25,
+  "poolLengthUnit": {
+    "unitId": 230,
+    "unitKey": "yard",
+    "factor": 91.44
+  },
+  "avgTrainingSpeed": 0,
+  "estimatedDistanceInMeters": 1828.8,
+  "estimatedDistanceUnit": {},
+  "shared": false
+}
+`;
+
+exports[`metric workout exports unchanged 1`] = `
+{
+  "workoutName": "Metric",
+  "description": "",
+  "sportType": {
+    "sportTypeId": 4,
+    "sportTypeKey": "swimming",
+    "displayOrder": 3
+  },
+  "workoutSegments": [
+    {
+      "segmentOrder": 1,
+      "sportType": {
+        "sportTypeId": 4,
+        "sportTypeKey": "swimming",
+        "displayOrder": 3
+      },
+      "workoutSteps": [
+        {
+          "type": "RepeatGroupDTO",
+          "stepId": 12834535362,
+          "stepOrder": 3,
+          "stepType": {
+            "stepTypeId": 6,
+            "stepTypeKey": "repeat",
+            "displayOrder": 6
+          },
+          "childStepId": 1,
+          "numberOfIterations": 2,
+          "workoutSteps": [
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535360,
+              "stepOrder": 1,
+              "stepType": {
+                "stepTypeId": 3,
+                "stepTypeKey": "interval",
+                "displayOrder": 3
+              },
+              "childStepId": 1,
+              "endCondition": {
+                "conditionTypeId": 3,
+                "conditionTypeKey": "distance",
+                "displayOrder": 3,
+                "displayable": true
+              },
+              "endConditionValue": 200,
+              "preferredEndConditionUnit": {
+                "unitId": 229,
+                "unitKey": "meter",
+                "factor": 100
+              },
+              "strokeType": {
+                "strokeTypeId": 6,
+                "strokeTypeKey": "free",
+                "displayOrder": 6
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "drillType": {
+                "drillTypeId": 0,
+                "drillTypeKey": null,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            },
+            {
+              "type": "ExecutableStepDTO",
+              "stepId": 12834535361,
+              "stepOrder": 2,
+              "stepType": {
+                "stepTypeId": 5,
+                "stepTypeKey": "rest",
+                "displayOrder": 5
+              },
+              "description": "Rest until lap press",
+              "endCondition": {
+                "conditionTypeId": 1,
+                "conditionTypeKey": "lap.button",
+                "displayOrder": 1,
+                "displayable": true
+              },
+              "endConditionValue": 0,
+              "strokeType": {
+                "strokeTypeId": 0,
+                "displayOrder": 0
+              },
+              "equipmentType": {
+                "equipmentTypeId": 0,
+                "displayOrder": 0
+              },
+              "targetType": {
+                "workoutTargetTypeId": 1,
+                "workoutTargetTypeKey": "no.target",
+                "displayOrder": 1
+              }
+            }
+          ],
+          "endConditionValue": 2,
+          "endCondition": {
+            "conditionTypeId": 7,
+            "conditionTypeKey": "iterations",
+            "displayOrder": 7,
+            "displayable": false
+          },
+          "skipLastRestStep": true,
+          "smartRepeat": false
+        },
+        {
+          "type": "ExecutableStepDTO",
+          "stepId": 12834535363,
+          "stepOrder": 4,
+          "stepType": {
+            "stepTypeId": 5,
+            "stepTypeKey": "rest",
+            "displayOrder": 5
+          },
+          "description": "Rest until lap press",
+          "endCondition": {
+            "conditionTypeId": 1,
+            "conditionTypeKey": "lap.button",
+            "displayOrder": 1,
+            "displayable": true
+          },
+          "endConditionValue": 0,
+          "strokeType": {
+            "strokeTypeId": 0,
+            "displayOrder": 0
+          },
+          "equipmentType": {
+            "equipmentTypeId": 0,
+            "displayOrder": 0
+          },
+          "targetType": {
+            "workoutTargetTypeId": 1,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1
+          }
+        }
+      ]
+    }
+  ],
+  "poolLength": 50,
+  "poolLengthUnit": {
+    "unitId": 229,
+    "unitKey": "meter",
+    "factor": 100
+  },
+  "avgTrainingSpeed": 0,
+  "estimatedDistanceInMeters": 400,
+  "estimatedDistanceUnit": {},
+  "shared": false
+}
+`;
