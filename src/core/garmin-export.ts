@@ -36,7 +36,7 @@ const NO_TARGET = { workoutTargetTypeId: 1, workoutTargetTypeKey: 'no.target', d
 const REST_STEP_TYPE = { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 };
 const INTERVAL_STEP_TYPE = { stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 };
 
-const STEP_ID_BASE = 12834535360;
+export const STEP_ID_BASE = 12834535360;
 let stepIdCounter = 0;
 
 function nextStepId(): number {
