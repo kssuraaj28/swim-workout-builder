@@ -17,9 +17,5 @@ export function downloadState(state: AppState, fileName = FILE_NAME): void {
 }
 
 export async function readStateFromFile(file: File): Promise<AppState> {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  if (bytes.byteLength === 0) {
-    throw new Error(`${file.name} is empty.`);
-  }
-  return decodeState(bytes);
+  return decodeState(new Uint8Array(await file.arrayBuffer()));
 }

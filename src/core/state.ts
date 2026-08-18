@@ -30,6 +30,10 @@ class StateFormatError extends Error {
 }
 
 export function decodeState(bytes: Uint8Array): AppState {
+  if (bytes.byteLength === 0) {
+    throw new StateFormatError('State file is empty.');
+  }
+
   let raw: unknown;
   try {
     raw = decode(bytes);
