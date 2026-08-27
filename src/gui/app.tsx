@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Header, type AppMode } from './header.tsx';
-import type { Workout } from '../core/types.ts';
+import type { Workout } from '../core/workouts.ts';
 import type { AppState } from '../core/state.ts';
 import { createEmptyState } from '../core/state.ts';
 import { WorkoutBuilder } from './workout-builder.tsx';

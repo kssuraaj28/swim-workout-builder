@@ -1,4 +1,4 @@
-import type { WorkoutSet } from '../core/types.ts';
+import type { WorkoutSet } from '../core/workouts.ts';
 import { StepEditor } from './step-editor.tsx';
 import { createDefaultStep } from '../core/utils.ts';
 

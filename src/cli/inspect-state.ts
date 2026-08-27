@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import type { Workout } from '../core/types.ts';
+import type { Workout } from '../core/workouts.ts';
 import type { AppState } from '../core/state.ts';
 import { decodeState } from '../core/state.ts';
 import { calcTotalDistance } from '../core/utils.ts';

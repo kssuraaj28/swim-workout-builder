@@ -1,7 +1,7 @@
 // Shared inputs for the tests. "fixtures.ts" is the more conventional name for
 // this file in most test suites, if that is what you are looking for.
 
-import type { Workout } from '../src/core/types.ts';
+import type { Workout } from '../src/core/workouts.ts';
 
 // Built fresh on every call so one test cannot mutate another's input.
 

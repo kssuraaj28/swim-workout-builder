@@ -3,11 +3,11 @@ import type {
   StrokeType,
   EquipmentType,
   RestType,
-} from '../core/types.ts';
+} from '../core/workouts.ts';
 import {
   STROKE_LABELS,
   EQUIPMENT_LABELS,
-} from '../core/types.ts';
+} from '../core/workouts.ts';
 
 interface StepEditorProps {
   step: WorkoutStep;

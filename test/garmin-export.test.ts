@@ -1,6 +1,6 @@
 import { test, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Workout } from '../src/core/types.ts';
+import type { Workout } from '../src/core/workouts.ts';
 import { exportToGarmin, STEP_ID_BASE } from '../src/core/garmin-export.ts';
 import { kitchenSinkWorkout, metricWorkout } from './example-workouts.ts';
 

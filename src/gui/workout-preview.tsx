@@ -1,5 +1,5 @@
-import type { Workout, WorkoutStep } from '../core/types.ts';
-import { STROKE_LABELS, EQUIPMENT_LABELS } from '../core/types.ts';
+import type { Workout, WorkoutStep } from '../core/workouts.ts';
+import { STROKE_LABELS, EQUIPMENT_LABELS } from '../core/workouts.ts';
 import { formatTime, calcTotalDistance, calcSetBaseDistance } from '../core/utils.ts';
 
 function stepSummary(step: WorkoutStep, unit: string): string {

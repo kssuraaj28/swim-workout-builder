@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Workout, WorkoutKey } from '../core/types.ts';
+import type { Workout, WorkoutKey } from '../core/workouts.ts';
 import { createDefaultWorkout, createDefaultSet, calcTotalDistance, todayDateString } from '../core/utils.ts';
 import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
 import { buildSetFromCode } from '../core/set-from-code.ts';

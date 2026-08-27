@@ -2,13 +2,13 @@ import type {
   EquipmentType,
   Workout,
   WorkoutStep,
-} from './types.ts';
+} from './workouts.ts';
 import {
   STROKE_TYPE_MAP,
   DRILL_STROKE,
   DRILL_SUBTYPE,
   POOL_UNIT_MAP,
-} from './types.ts';
+} from './workouts.ts';
 import { calcTotalDistance } from './utils.ts';
 
 // DTO = Data Transfer Object. Garmin's workout-step DTOs (ExecutableStepDTO, RepeatGroupDTO)

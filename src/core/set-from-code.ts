@@ -1,4 +1,4 @@
-import type { WorkoutSet } from './types.ts';
+import type { WorkoutSet } from './workouts.ts';
 import { createDefaultSet, createDefaultStep } from './utils.ts';
 
 export function buildSetFromCode(): WorkoutSet {
