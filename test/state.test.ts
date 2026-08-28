@@ -2,14 +2,26 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AppState } from '../src/core/state.ts';
 import { STATE_VERSION, createEmptyState, decodeState, encodeState } from '../src/core/state.ts';
+import type { Designer } from '../src/core/designers.ts';
 import { kitchenSinkWorkout, metricWorkout } from './example-workouts.ts';
 import { assertClean, assertWarned } from './support.ts';
+
+function sampleDesigner(): Designer {
+  return {
+    id: 'endurance-free',
+    description: 'Aerobic base',
+    variation: [{ identifier: 'stroke', kind: 'string' }],
+    overload: [{ identifier: 'reps', kind: 'number' }],
+    source: 'return { name: "x", iterations: 1, steps: [] };',
+  };
+}
 
 function fullState(): AppState {
   return {
     version: STATE_VERSION,
     workout: kitchenSinkWorkout(),
     library: [metricWorkout(), kitchenSinkWorkout()],
+    designers: [sampleDesigner()],
   };
 }
 
@@ -65,4 +77,17 @@ test('a malformed workout inside the library surfaces its warnings', () => {
   const bytes = encodeState({ ...fullState(), library: [bad] });
   const r = decodeState(bytes);
   assertWarned(r, 'poolLength');
+});
+
+test('a state file missing its designers field loads with an empty list', () => {
+  const bytes = encodeState({ version: STATE_VERSION, workout: kitchenSinkWorkout(), library: [] } as unknown as AppState);
+  const r = decodeState(bytes);
+  assert.deepEqual(r.value.designers, []);
+});
+
+test('a malformed designer inside the designers array surfaces its warnings', () => {
+  const bad = { ...sampleDesigner(), variation: 'nope' } as unknown as Designer;
+  const bytes = encodeState({ ...fullState(), designers: [bad] });
+  const r = decodeState(bytes);
+  assertWarned(r, 'variation');
 });

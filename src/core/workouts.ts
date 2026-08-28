@@ -1,5 +1,5 @@
 import type { Warned } from './utils.ts';
-import { NormalizeWarnings, asObject, bool, int, oneOf, str, todayDateString, warnUnknown } from './utils.ts';
+import { NormalizeWarnings, arrayInto, asObject, bool, int, oneOf, str, todayDateString, warnUnknown } from './utils.ts';
 
 // Runtime tuple → derived type pattern:
 //   `as const` freezes the array so each element is its own literal type ('free', not string).
@@ -164,13 +164,4 @@ function workoutInto(raw: unknown, field: string, warnings: NormalizeWarnings): 
 
 function equipmentInto(value: unknown, field: string, warnings: NormalizeWarnings): EquipmentType[] {
   return arrayInto(value, field, warnings, (item, i) => oneOf(item, EQUIPMENT, `${field}[${i}]`, 'none', warnings));
-}
-
-function arrayInto<T>(value: unknown, field: string, warnings: NormalizeWarnings, item: (v: unknown, i: number) => T): T[] {
-  if (value === undefined) return [];
-  if (!Array.isArray(value)) {
-    warnings.add(`${field} was not an array; using []`);
-    return [];
-  }
-  return value.map(item);
 }

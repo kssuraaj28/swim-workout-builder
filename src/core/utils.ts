@@ -82,6 +82,15 @@ export function oneOf<T extends string>(
   return value as T;
 }
 
+export function arrayInto<T>(value: unknown, field: string, warnings: NormalizeWarnings, item: (v: unknown, i: number) => T): T[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    warnings.add(`${field} was not an array; using []`);
+    return [];
+  }
+  return value.map(item);
+}
+
 export function warnUnknown(obj: Record<string, unknown>, known: readonly string[], warnings: NormalizeWarnings): void {
   const set = new Set(known);
   for (const key of Object.keys(obj)) {

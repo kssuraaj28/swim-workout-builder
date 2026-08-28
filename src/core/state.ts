@@ -1,6 +1,8 @@
 import { decode, encode } from 'cbor-x';
 import type { Workout } from './workouts.ts';
 import { createDefaultWorkout, normalizeWorkout } from './workouts.ts';
+import type { Designer } from './designers.ts';
+import { normalizeDesigner } from './designers.ts';
 import type { Warned } from './utils.ts';
 import { NormalizeWarnings, asObject, warnUnknown } from './utils.ts';
 
@@ -10,6 +12,7 @@ export interface AppState {
   version: number;
   workout: Workout;
   library: Workout[];
+  designers: Designer[];
 }
 
 export function createEmptyState(): AppState {
@@ -17,6 +20,7 @@ export function createEmptyState(): AppState {
     version: STATE_VERSION,
     workout: createDefaultWorkout(),
     library: [],
+    designers: [],
   };
 }
 
@@ -64,8 +68,19 @@ export function decodeState(bytes: Uint8Array): Warned<AppState> {
     warnings.add('library was not an array; using []');
   }
 
+  let designers: Designer[] = [];
+  if (Array.isArray(obj.designers)) {
+    designers = obj.designers.map(d => {
+      const r = normalizeDesigner(d);
+      warnings.merge(r.warnings);
+      return r.value;
+    });
+  } else if (obj.designers !== undefined) {
+    warnings.add('designers was not an array; using []');
+  }
+
   return {
-    value: { version: STATE_VERSION, workout: workoutResult.value, library },
+    value: { version: STATE_VERSION, workout: workoutResult.value, library, designers },
     warnings,
   };
 }

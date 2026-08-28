@@ -1,30 +1,26 @@
 import { useState } from 'react';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
+import type { Designer, Param, ParamKind } from '../core/designers.ts';
+import { KINDS, createDefaultDesigner } from '../core/designers.ts';
 
-const KINDS = ['number', 'string', 'boolean'] as const;
-type ParamKind = typeof KINDS[number];
-
-interface ParamRow {
-  identifier: string;
-  kind: ParamKind;
-}
-
-const EMPTY_ROW: ParamRow = { identifier: '', kind: 'number' };
+const EMPTY_PARAM: Param = { identifier: '', kind: 'number' };
 
 const ROW_GRID = 'grid grid-cols-[1fr_110px_28px] gap-2';
 const ROW_INPUT = 'w-full min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900';
 
-const STARTER_VARIATION: ParamRow[] = [
-  { identifier: 'stroke', kind: 'string' },
-  { identifier: 'distance', kind: 'number' },
-];
-
-const STARTER_OVERLOAD: ParamRow[] = [
-  { identifier: 'reps', kind: 'number' },
-  { identifier: 'sendOff', kind: 'number' },
-];
-
-const STARTER_SOURCE = `return {
+/** Populated example so a first-time user sees the shape of a designer. */
+const STARTER_DESIGNER: Designer = {
+  id: 'endurance-free',
+  description: 'Aerobic base pull sets.',
+  variation: [
+    { identifier: 'stroke', kind: 'string' },
+    { identifier: 'distance', kind: 'number' },
+  ],
+  overload: [
+    { identifier: 'reps', kind: 'number' },
+    { identifier: 'sendOff', kind: 'number' },
+  ],
+  source: `return {
   name: 'Endurance ' + variation.stroke,
   iterations: 1,
   steps: [
@@ -41,14 +37,19 @@ const STARTER_SOURCE = `return {
     },
   ],
 };
-`;
+`,
+};
 
-export function DesignSet() {
-  const [id, setId] = useState('endurance-free');
-  const [description, setDescription] = useState('Aerobic base pull sets.');
-  const [variation, setVariation] = useState<ParamRow[]>(STARTER_VARIATION);
-  const [overload, setOverload] = useState<ParamRow[]>(STARTER_OVERLOAD);
-  const [source, setSource] = useState(STARTER_SOURCE);
+interface Props {
+  designers: Designer[];
+  onSaveDesigner: (designer: Designer) => void;
+  onDeleteDesigner: (id: string) => void;
+}
+
+export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props) {
+  const [editing, setEditing] = useState<Designer>(STARTER_DESIGNER);
+
+  const patch = (p: Partial<Designer>) => setEditing({ ...editing, ...p });
 
   return (
     <div className="flex">
@@ -56,11 +57,43 @@ export function DesignSet() {
         <div className="p-3 border-b border-gray-200 text-xs font-semibold uppercase tracking-wide text-gray-500">
           Designers
         </div>
-        <div className="flex-1 overflow-auto p-3 text-sm text-gray-400 italic">
-          No designers yet.
+        <div className="flex-1 overflow-auto p-3">
+          {designers.length === 0 ? (
+            <div className="text-sm text-gray-400 italic">No designers yet.</div>
+          ) : (
+            <ul className="space-y-1">
+              {designers.map(d => (
+                <li key={d.id} className="flex items-center gap-1">
+                  <button
+                    onClick={() => setEditing(d)}
+                    className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
+                      d.id === editing.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                    }`}
+                  >
+                    <div className="truncate font-mono">{d.id}</div>
+                    {d.description && (
+                      <div className="text-xs text-gray-500 truncate">{d.description}</div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete designer "${d.id}"?`)) onDeleteDesigner(d.id);
+                    }}
+                    className="text-red-400 hover:text-red-600 text-lg leading-none px-1"
+                    title="Delete"
+                  >
+                    &times;
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="p-3 border-t border-gray-200">
-          <button className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200">
+          <button
+            onClick={() => setEditing(createDefaultDesigner())}
+            className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
+          >
             + New Designer
           </button>
         </div>
@@ -69,25 +102,36 @@ export function DesignSet() {
       <div className="flex-1 min-w-0">
         <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-4">
-            <TextField label="Id" value={id} onChange={setId} placeholder="kebab-case-id" mono />
-            <TextArea label="Description" value={description} onChange={setDescription} rows={2} />
+            <TextField label="Id" value={editing.id} onChange={v => patch({ id: v })} placeholder="kebab-case-id" mono />
+            <TextArea label="Description" value={editing.description} onChange={v => patch({ description: v })} rows={2} />
           </section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ParamSection title="Variation" rows={variation} onChange={setVariation} />
-            <ParamSection title="Overload" rows={overload} onChange={setOverload} />
+            <ParamSection title="Variation" rows={editing.variation} onChange={rows => patch({ variation: rows })} />
+            <ParamSection title="Overload"  rows={editing.overload}  onChange={rows => patch({ overload: rows })} />
           </div>
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Source</h2>
             <textarea
-              value={source}
-              onChange={e => setSource(e.target.value)}
+              value={editing.source}
+              onChange={e => patch({ source: e.target.value })}
               spellCheck={false}
               rows={14}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm resize-y"
             />
           </section>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => onSaveDesigner(editing)}
+              disabled={!editing.id.trim()}
+              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+              title={editing.id.trim() ? 'Save designer' : 'Give the designer an id first'}
+            >
+              Save Designer
+            </button>
+          </div>
         </main>
       </div>
     </div>
@@ -98,16 +142,16 @@ function ParamSection({
   title, rows, onChange,
 }: {
   title: string;
-  rows: ParamRow[];
-  onChange: (rows: ParamRow[]) => void;
+  rows: Param[];
+  onChange: (rows: Param[]) => void;
 }) {
-  const update = (i: number, patch: Partial<ParamRow>) => {
+  const update = (i: number, p: Partial<Param>) => {
     const next = [...rows];
-    next[i] = { ...next[i], ...patch };
+    next[i] = { ...next[i], ...p };
     onChange(next);
   };
   const remove = (i: number) => onChange(rows.filter((_, j) => j !== i));
-  const add = () => onChange([...rows, EMPTY_ROW]);
+  const add = () => onChange([...rows, EMPTY_PARAM]);
 
   return (
     <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
