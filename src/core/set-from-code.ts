@@ -1,5 +1,5 @@
 import type { WorkoutSet } from './workouts.ts';
-import { createDefaultSet, createDefaultStep } from './utils.ts';
+import { createDefaultSet, createDefaultStep } from './workouts.ts';
 
 export function buildSetFromCode(): WorkoutSet {
   return {

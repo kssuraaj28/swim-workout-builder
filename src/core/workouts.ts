@@ -1,3 +1,5 @@
+import { todayDateString } from './utils.ts';
+
 export type StrokeType = 'free' | 'backstroke' | 'breaststroke' | 'butterfly' | 'mixed';
 export type EquipmentType = 'none' | 'fins' | 'kickboard' | 'paddles' | 'pull_buoy' | 'snorkel';
 export type RestType = 'rest' | 'interval' | 'lap_button';
@@ -55,4 +57,47 @@ export const EQUIPMENT_LABELS: Record<EquipmentType, string> = {
   snorkel: 'Snorkel',
 };
 
+export function createDefaultStep(): WorkoutStep {
+  return {
+    repetitions: 1,
+    strokeType: 'free',
+    distance: 100,
+    equipment: [],
+    track: true,
+    targetPace: '',
+    description: '',
+    restType: 'rest',
+    restValue: 15,
+  };
+}
 
+export function createDefaultSet(): WorkoutSet {
+  return {
+    name: '',
+    iterations: 1,
+    steps: [createDefaultStep()],
+  };
+}
+
+export function createDefaultWorkout(): Workout {
+  return {
+    name: '',
+    createdAt: todayDateString(),
+    description: '',
+    poolLength: 25,
+    poolLengthUnit: 'yard',
+    sets: [],
+  };
+}
+
+/** Distance covered in a single iteration of the set (sum of step.distance * step.repetitions). */
+export function calcSetBaseDistance(set: WorkoutSet): number {
+  return set.steps.reduce((d, s) => d + s.distance * s.repetitions, 0);
+}
+
+export function calcTotalDistance(workout: Workout): number {
+  return workout.sets.reduce(
+    (total, set) => total + calcSetBaseDistance(set) * set.iterations,
+    0,
+  );
+}

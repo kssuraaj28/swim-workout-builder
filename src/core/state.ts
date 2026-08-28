@@ -1,6 +1,6 @@
 import { decode, encode } from 'cbor-x';
 import type { Workout } from './workouts.ts';
-import { createDefaultWorkout } from './utils.ts';
+import { createDefaultWorkout } from './workouts.ts';
 
 export const STATE_VERSION = 1;
 

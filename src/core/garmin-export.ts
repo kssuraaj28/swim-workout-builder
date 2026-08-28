@@ -4,7 +4,7 @@ import type {
   Workout,
   WorkoutStep,
 } from './workouts.ts';
-import { calcTotalDistance } from './utils.ts';
+import { calcTotalDistance } from './workouts.ts';
 
 const STROKE_TYPE_MAP: Record<StrokeType, { id: number; key: string; displayOrder: number }> = {
   backstroke: { id: 2, key: 'backstroke', displayOrder: 2 },
