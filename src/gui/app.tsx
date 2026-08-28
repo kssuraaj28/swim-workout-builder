@@ -5,6 +5,7 @@ import type { AppState } from '../core/state.ts';
 import { createEmptyState } from '../core/state.ts';
 import { WorkoutBuilder } from './workout-builder.tsx';
 import { InfoPage } from './info-page.tsx';
+import { DesignSet } from './design-set.tsx';
 import { downloadState } from './import-export.ts';
 
 const showWarnings: ShowWarnings = (source, warnings) => {
@@ -31,7 +32,7 @@ function App() {
         onExport={handleExport}
         showWarnings={showWarnings}
       />
-      {mode === 'workout' ? (
+      {mode === 'workout' && (
         <WorkoutBuilder
           workout={workout}
           onWorkoutChange={setWorkout}
@@ -39,9 +40,9 @@ function App() {
           onLibraryChange={setLibrary}
           showWarnings={showWarnings}
         />
-      ) : (
-        <InfoPage />
       )}
+      {mode === 'design' && <DesignSet />}
+      {mode === 'info' && <InfoPage />}
     </div>
   );
 }
