@@ -8,13 +8,23 @@ import { SetCard } from './set-card.tsx';
 import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
-import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
+import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
 
 const STARTER_CODE = `return {
   name: 'Main Set',
   iterations: 1,
   steps: [
-    { repetitions: 5, distance: 200, strokeType: 'free', restType: 'rest', restValue: 20 },
+    {
+      repetitions: 5,
+      strokeType: 'free',
+      distance: 200,
+      equipment: ['pull_buoy', 'paddles'],
+      track: true,
+      targetPace: '1:30',
+      description: 'Steady pull',
+      restType: 'rest',
+      restValue: 20,
+    },
   ],
 };
 `;
@@ -24,6 +34,7 @@ interface Props {
   onWorkoutChange: (workout: Workout) => void;
   library: Workout[];
   onLibraryChange: (library: Workout[]) => void;
+  showWarnings: ShowWarnings;
 }
 
 export function WorkoutBuilder({
@@ -31,6 +42,7 @@ export function WorkoutBuilder({
   onWorkoutChange,
   library,
   onLibraryChange,
+  showWarnings,
 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
@@ -41,8 +53,11 @@ export function WorkoutBuilder({
   const addSet = () => updateSets([...workout.sets, createDefaultSet()]);
 
   const runCodeDraft = () => {
-    updateSets([...workout.sets, buildSetFromCode()]);
+    if (codeDraft === null) return;
+    const { value, warnings } = buildSetFromCode(codeDraft);
+    updateSets([...workout.sets, value]);
     setCodeDraft(null);
+    showWarnings('code', warnings);
   };
 
   const moveSet = (index: number, dir: -1 | 1) => {

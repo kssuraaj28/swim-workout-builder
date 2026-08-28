@@ -37,6 +37,7 @@ function App() {
           onWorkoutChange={setWorkout}
           library={library}
           onLibraryChange={setLibrary}
+          showWarnings={showWarnings}
         />
       ) : (
         <InfoPage />
