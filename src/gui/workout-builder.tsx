@@ -4,6 +4,8 @@ import { createDefaultWorkout, createDefaultSet, calcTotalDistance } from '../co
 import { todayDateString } from '../core/utils.ts';
 import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
 import { buildSetFromCode } from '../core/set-from-code.ts';
+import type { Designer, Param } from '../core/designers.ts';
+import { buildSetFromDesigner } from '../core/designers.ts';
 import { SetCard } from './set-card.tsx';
 import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
@@ -34,7 +36,30 @@ interface Props {
   onWorkoutChange: (workout: Workout) => void;
   library: Workout[];
   onLibraryChange: (library: Workout[]) => void;
+  designers: Designer[];
   showWarnings: ShowWarnings;
+}
+
+type Values = Record<string, string | boolean>;
+interface DesignerDraft {
+  id: string;
+  variation: Values;
+  overload: Values;
+}
+
+function initValues(params: Param[]): Values {
+  const r: Values = {};
+  for (const p of params) r[p.identifier] = p.kind === 'boolean' ? false : '';
+  return r;
+}
+
+function convertValues(params: Param[], values: Values): Record<string, unknown> {
+  const r: Record<string, unknown> = {};
+  for (const p of params) {
+    const v = values[p.identifier];
+    r[p.identifier] = p.kind === 'number' ? Number(v) : v;
+  }
+  return r;
 }
 
 export function WorkoutBuilder({
@@ -42,11 +67,13 @@ export function WorkoutBuilder({
   onWorkoutChange,
   library,
   onLibraryChange,
+  designers,
   showWarnings,
 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
   const [codeDraft, setCodeDraft] = useState<string | null>(null);
+  const [designerDraft, setDesignerDraft] = useState<DesignerDraft | null>(null);
 
   const updateSets = (sets: Workout['sets']) => onWorkoutChange({ ...workout, sets });
 
@@ -58,6 +85,49 @@ export function WorkoutBuilder({
     updateSets([...workout.sets, value]);
     setCodeDraft(null);
     showWarnings('code', warnings);
+  };
+
+  const openDesignerDraft = () => {
+    if (designers.length === 0) return;
+    const first = designers[0];
+    setDesignerDraft({
+      id: first.id,
+      variation: initValues(first.variation),
+      overload: initValues(first.overload),
+    });
+  };
+
+  const changeDesigner = (id: string) => {
+    const d = designers.find(x => x.id === id);
+    if (!d) return;
+    setDesignerDraft({
+      id,
+      variation: initValues(d.variation),
+      overload: initValues(d.overload),
+    });
+  };
+
+  const updateDesignerValue = (
+    section: 'variation' | 'overload',
+    identifier: string,
+    value: string | boolean,
+  ) => {
+    setDesignerDraft(d => d && ({
+      ...d,
+      [section]: { ...d[section], [identifier]: value },
+    }));
+  };
+
+  const insertDesignerDraft = () => {
+    if (!designerDraft) return;
+    const designer = designers.find(d => d.id === designerDraft.id);
+    if (!designer) return;
+    const v = convertValues(designer.variation, designerDraft.variation);
+    const o = convertValues(designer.overload, designerDraft.overload);
+    const { value, warnings } = buildSetFromDesigner(designer, v, o);
+    updateSets([...workout.sets, value]);
+    setDesignerDraft(null);
+    showWarnings(`designer ${designer.id}`, warnings);
   };
 
   const moveSet = (index: number, dir: -1 | 1) => {
@@ -254,14 +324,9 @@ export function WorkoutBuilder({
 
               {codeDraft !== null && (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      New Set from Code
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      Not wired up yet — inserts a fixed 5 &times; 200
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    New Set from Code
+                  </span>
                   <textarea
                     value={codeDraft}
                     onChange={e => setCodeDraft(e.target.value)}
@@ -286,6 +351,54 @@ export function WorkoutBuilder({
                 </div>
               )}
 
+              {designerDraft !== null && (() => {
+                const designer = designers.find(d => d.id === designerDraft.id);
+                if (!designer) return null;
+                return (
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      New Set from Designer
+                    </span>
+                    <label className="flex flex-col text-sm text-gray-600">
+                      Designer
+                      <select
+                        value={designerDraft.id}
+                        onChange={e => changeDesigner(e.target.value)}
+                        className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono"
+                      >
+                        {designers.map(d => <option key={d.id} value={d.id}>{d.id}</option>)}
+                      </select>
+                    </label>
+                    <ParamInputs
+                      title="Variation"
+                      params={designer.variation}
+                      values={designerDraft.variation}
+                      onChange={(id, v) => updateDesignerValue('variation', id, v)}
+                    />
+                    <ParamInputs
+                      title="Overload"
+                      params={designer.overload}
+                      values={designerDraft.overload}
+                      onChange={(id, v) => updateDesignerValue('overload', id, v)}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={insertDesignerDraft}
+                        className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                      >
+                        Insert
+                      </button>
+                      <button
+                        onClick={() => setDesignerDraft(null)}
+                        className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="flex justify-center gap-2">
                 <button
                   onClick={addSet}
@@ -300,11 +413,54 @@ export function WorkoutBuilder({
                 >
                   + Add Set from Code
                 </button>
+                <button
+                  onClick={openDesignerDraft}
+                  disabled={designerDraft !== null || designers.length === 0}
+                  title={designers.length === 0 ? 'Create designers in the Design Set tab first' : ''}
+                  className="px-4 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 disabled:opacity-50"
+                >
+                  + From Designer
+                </button>
               </div>
             </div>
           )}
           </main>
         </div>
+    </div>
+  );
+}
+
+function ParamInputs({
+  title, params, values, onChange,
+}: {
+  title: string;
+  params: Param[];
+  values: Values;
+  onChange: (identifier: string, value: string | boolean) => void;
+}) {
+  if (params.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">{title}</div>
+      {params.map(p => (
+        <label key={p.identifier} className="flex items-center gap-2 text-sm text-gray-600">
+          <span className="w-32 font-mono truncate">{p.identifier}</span>
+          {p.kind === 'boolean' ? (
+            <input
+              type="checkbox"
+              checked={values[p.identifier] as boolean}
+              onChange={e => onChange(p.identifier, e.target.checked)}
+            />
+          ) : (
+            <input
+              type={p.kind === 'number' ? 'number' : 'text'}
+              value={values[p.identifier] as string}
+              onChange={e => onChange(p.identifier, e.target.value)}
+              className="flex-1 min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
+            />
+          )}
+        </label>
+      ))}
     </div>
   );
 }

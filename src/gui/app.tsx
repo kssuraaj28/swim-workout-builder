@@ -50,6 +50,7 @@ function App() {
           onWorkoutChange={setWorkout}
           library={library}
           onLibraryChange={setLibrary}
+          designers={designers}
           showWarnings={showWarnings}
         />
       )}

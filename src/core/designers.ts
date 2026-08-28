@@ -1,5 +1,7 @@
 import type { Warned } from './utils.ts';
 import { NormalizeWarnings, arrayInto, asObject, oneOf, str, warnUnknown } from './utils.ts';
+import type { WorkoutSet } from './workouts.ts';
+import { createDefaultSet, normalizeWorkoutSet } from './workouts.ts';
 
 export const KINDS = ['number', 'string', 'boolean'] as const;
 export type ParamKind = typeof KINDS[number];
@@ -47,6 +49,22 @@ function paramInto(raw: unknown, field: string, warnings: NormalizeWarnings): Pa
     identifier: str(obj.identifier, 'identifier', base.identifier, warnings),
     kind:       oneOf(obj.kind, KINDS, 'kind', base.kind, warnings),
   };
+}
+
+export function buildSetFromDesigner(
+  designer: Designer,
+  variation: Record<string, unknown>,
+  overload: Record<string, unknown>,
+): Warned<WorkoutSet> {
+  let raw: unknown;
+  try {
+    raw = new Function('variation', 'overload', designer.source)(variation, overload);
+  } catch (err) {
+    const warnings = new NormalizeWarnings();
+    warnings.add(`Designer "${designer.id}" failed to run: ${err instanceof Error ? err.message : String(err)}`);
+    return { value: createDefaultSet(), warnings };
+  }
+  return normalizeWorkoutSet(raw);
 }
 
 function designerInto(raw: unknown, field: string, warnings: NormalizeWarnings): Designer {
