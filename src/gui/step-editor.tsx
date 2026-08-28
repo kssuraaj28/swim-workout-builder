@@ -4,10 +4,7 @@ import type {
   EquipmentType,
   RestType,
 } from '../core/workouts.ts';
-import {
-  STROKE_LABELS,
-  EQUIPMENT_LABELS,
-} from '../core/workouts.ts';
+import { STROKE_LABELS, EQUIPMENT_LABELS } from './labels.ts';
 
 interface StepEditorProps {
   step: WorkoutStep;

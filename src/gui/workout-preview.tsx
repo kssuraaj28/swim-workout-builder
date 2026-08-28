@@ -1,7 +1,7 @@
 import type { Workout, WorkoutStep } from '../core/workouts.ts';
-import { STROKE_LABELS, EQUIPMENT_LABELS } from '../core/workouts.ts';
 import { calcTotalDistance, calcSetBaseDistance } from '../core/workouts.ts';
 import { formatTime } from '../core/utils.ts';
+import { STROKE_LABELS, EQUIPMENT_LABELS } from './labels.ts';
 
 function stepSummary(step: WorkoutStep, unit: string): string {
   const parts: string[] = [];
