@@ -38,25 +38,6 @@ export interface WorkoutKey {
   createdAt: string;
 }
 
-// Garmin enum mappings
-export const STROKE_TYPE_MAP: Record<StrokeType, { id: number; key: string; displayOrder: number }> = {
-  backstroke: { id: 2, key: 'backstroke', displayOrder: 2 },
-  breaststroke: { id: 3, key: 'breaststroke', displayOrder: 3 },
-  butterfly: { id: 5, key: 'fly', displayOrder: 5 },
-  free: { id: 6, key: 'free', displayOrder: 6 },
-  mixed: { id: 8, key: 'mixed', displayOrder: 8 },
-};
-
-/** Garmin drill stroke type — used when WorkoutStep.track is false. */
-export const DRILL_STROKE = { id: 4, key: 'drill', displayOrder: 4 };
-/** Garmin generic drill sub-type — paired with DRILL_STROKE when exporting untracked steps. */
-export const DRILL_SUBTYPE = { id: 3, key: 'drill', displayOrder: 3 };
-
-export const POOL_UNIT_MAP: Record<string, { unitId: number; unitKey: string; factor: number }> = {
-  yard: { unitId: 230, unitKey: 'yard', factor: 91.44 },
-  meter: { unitId: 229, unitKey: 'meter', factor: 100 },
-};
-
 export const STROKE_LABELS: Record<StrokeType, string> = {
   free: 'Freestyle',
   backstroke: 'Backstroke',

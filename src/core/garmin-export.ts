@@ -1,15 +1,28 @@
 import type {
   EquipmentType,
+  StrokeType,
   Workout,
   WorkoutStep,
 } from './workouts.ts';
-import {
-  STROKE_TYPE_MAP,
-  DRILL_STROKE,
-  DRILL_SUBTYPE,
-  POOL_UNIT_MAP,
-} from './workouts.ts';
 import { calcTotalDistance } from './utils.ts';
+
+const STROKE_TYPE_MAP: Record<StrokeType, { id: number; key: string; displayOrder: number }> = {
+  backstroke: { id: 2, key: 'backstroke', displayOrder: 2 },
+  breaststroke: { id: 3, key: 'breaststroke', displayOrder: 3 },
+  butterfly: { id: 5, key: 'fly', displayOrder: 5 },
+  free: { id: 6, key: 'free', displayOrder: 6 },
+  mixed: { id: 8, key: 'mixed', displayOrder: 8 },
+};
+
+/** Garmin drill stroke type — used when WorkoutStep.track is false. */
+const DRILL_STROKE = { id: 4, key: 'drill', displayOrder: 4 };
+/** Garmin generic drill sub-type — paired with DRILL_STROKE when exporting untracked steps. */
+const DRILL_SUBTYPE = { id: 3, key: 'drill', displayOrder: 3 };
+
+const POOL_UNIT_MAP: Record<string, { unitId: number; unitKey: string; factor: number }> = {
+  yard: { unitId: 230, unitKey: 'yard', factor: 91.44 },
+  meter: { unitId: 229, unitKey: 'meter', factor: 100 },
+};
 
 // DTO = Data Transfer Object. Garmin's workout-step DTOs (ExecutableStepDTO, RepeatGroupDTO)
 // have many fields with heterogeneous types. We don't model the full schema in TypeScript —
