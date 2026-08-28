@@ -1,7 +1,8 @@
 import { decode, encode } from 'cbor-x';
 import type { Workout } from './workouts.ts';
 import { createDefaultWorkout, normalizeWorkout } from './workouts.ts';
-import { asObject, normalizeFail, rejectUnknown } from './utils.ts';
+import type { Warned } from './utils.ts';
+import { NormalizeWarnings, asObject, warnUnknown } from './utils.ts';
 
 export const STATE_VERSION = 1;
 
@@ -23,33 +24,48 @@ export function encodeState(state: AppState): Uint8Array {
   return encode(state);
 }
 
-export function decodeState(bytes: Uint8Array): AppState {
-  if (bytes.byteLength === 0) normalizeFail('State file is empty.');
+const APP_STATE_KEYS = Object.keys(createEmptyState()) as (keyof AppState)[];
+
+export function decodeState(bytes: Uint8Array): Warned<AppState> {
+  const warnings = new NormalizeWarnings();
+
+  if (bytes.byteLength === 0) {
+    warnings.add('State file is empty; using an empty state');
+    return { value: createEmptyState(), warnings };
+  }
 
   let raw: unknown;
   try {
     raw = decode(bytes);
   } catch (err) {
-    normalizeFail(`Not a readable state file (${err instanceof Error ? err.message : String(err)}).`);
+    warnings.add(`Not a readable state file (${err instanceof Error ? err.message : String(err)}); using an empty state`);
+    return { value: createEmptyState(), warnings };
   }
 
-  return normalizeAppState(raw);
-}
-
-const APP_STATE_KEYS = Object.keys(createEmptyState()) as (keyof AppState)[];
-
-function normalizeAppState(raw: unknown): AppState {
-  const obj = asObject(raw);
-  rejectUnknown(obj, APP_STATE_KEYS, []);
+  const obj = asObject(raw, 'state', warnings);
+  warnUnknown(obj, APP_STATE_KEYS, warnings);
 
   if (obj.version !== STATE_VERSION) {
-    normalizeFail(`State file is version ${String(obj.version)}, this build reads version ${STATE_VERSION}.`);
+    warnings.add(`State file is version ${String(obj.version)}, this build reads version ${STATE_VERSION}; using an empty state`);
+    return { value: createEmptyState(), warnings };
   }
-  if (!Array.isArray(obj.library)) normalizeFail('library must be an array');
+
+  const workoutResult = normalizeWorkout(obj.workout);
+  warnings.merge(workoutResult.warnings);
+
+  let library: Workout[] = [];
+  if (Array.isArray(obj.library)) {
+    library = obj.library.map(w => {
+      const r = normalizeWorkout(w);
+      warnings.merge(r.warnings);
+      return r.value;
+    });
+  } else if (obj.library !== undefined) {
+    warnings.add('library was not an array; using []');
+  }
 
   return {
-    version: STATE_VERSION,
-    workout: normalizeWorkout(obj.workout),
-    library: obj.library.map(normalizeWorkout),
+    value: { version: STATE_VERSION, workout: workoutResult.value, library },
+    warnings,
   };
 }

@@ -21,10 +21,10 @@ export function Header({ mode, onModeChange, onImport, onExport }: HeaderProps) 
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
-    try {
-      onImport(await readStateFromFile(file));
-    } catch (err) {
-      alert(`Could not read ${file.name}: ${err instanceof Error ? err.message : String(err)}`);
+    const { value, warnings } = await readStateFromFile(file);
+    onImport(value);
+    if (warnings.length > 0) {
+      alert(`Loaded ${file.name} with ${warnings.length} warning(s):\n\n${[...warnings].join('\n')}`);
     }
   };
 

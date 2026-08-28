@@ -1,48 +1,31 @@
-/** Thrown when input from an untrusted source (a state file, authored code) fails to match its type. */
-export class NormalizeError extends Error {}
+/** Accumulator for normalize warnings. Add-only from the outside; iterable for readers. */
+export class NormalizeWarnings {
+  #list: string[] = [];
 
-export function normalizeFail(message: string): never {
-  throw new NormalizeError(message);
-}
+  add(message: string): void {
+    this.#list.push(message);
+  }
 
+  /** Merge another accumulator's messages into this one. */
+  merge(other: NormalizeWarnings): void {
+    for (const m of other) this.add(m);
+  }
 
-export function rejectUnknown(obj: Record<string, unknown>, required: readonly string[], optional: readonly string[]): void {
-  const known = new Set<string>([...required, ...optional]);
-  for (const key of Object.keys(obj)) {
-    if (!known.has(key)) normalizeFail(`unknown field \`${key}\``);
+  get length(): number {
+    return this.#list.length;
+  }
+
+  some(predicate: (message: string) => boolean): boolean {
+    return this.#list.some(predicate);
+  }
+
+  [Symbol.iterator](): Iterator<string> {
+    return this.#list[Symbol.iterator]();
   }
 }
 
-export function asObject(value: unknown): Record<string, unknown> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    normalizeFail('must be an object');
-  }
-  return value as Record<string, unknown>;
-}
-
-export function int(value: unknown, field: string, min: number): number {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < min) {
-    normalizeFail(`${field} must be a whole number >= ${min}`);
-  }
-  return value;
-}
-
-export function bool(value: unknown, field: string): boolean {
-  if (typeof value !== 'boolean') normalizeFail(`${field} must be true or false`);
-  return value;
-}
-
-export function str(value: unknown, field: string): string {
-  if (typeof value !== 'string') normalizeFail(`${field} must be a string`);
-  return value;
-}
-
-export function oneOf<T extends string>(value: unknown, allowed: readonly T[], field: string): T {
-  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
-    normalizeFail(`${field} must be one of: ${allowed.join(', ')}`);
-  }
-  return value as T;
-}
+/** A value paired with any warnings produced while normalizing it. */
+export type Warned<T> = { value: T; warnings: NormalizeWarnings };
 
 export function todayDateString(): string {
   return new Date().toISOString().slice(0, 10);
@@ -52,4 +35,63 @@ export function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${String(secs).padStart(2, '0')}`;
+}
+
+// Field validators used by the normalize* functions. Each takes a shared `warnings` accumulator;
+// on bad input, it appends a message and returns the fallback rather than throwing.
+
+export function asObject(value: unknown, field: string, warnings: NormalizeWarnings): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    warnings.add(`${field} was not an object; using empty object`);
+    return {};
+  }
+  return value as Record<string, unknown>;
+}
+
+export function int(value: unknown, field: string, min: number, fallback: number, warnings: NormalizeWarnings): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < min) {
+    warnings.add(`${field} was ${describe(value)}; using ${fallback}`);
+    return fallback;
+  }
+  return value;
+}
+
+export function bool(value: unknown, field: string, fallback: boolean, warnings: NormalizeWarnings): boolean {
+  if (typeof value !== 'boolean') {
+    warnings.add(`${field} was ${describe(value)}; using ${fallback}`);
+    return fallback;
+  }
+  return value;
+}
+
+export function str(value: unknown, field: string, fallback: string, warnings: NormalizeWarnings): string {
+  if (typeof value !== 'string') {
+    warnings.add(`${field} was ${describe(value)}; using ${JSON.stringify(fallback)}`);
+    return fallback;
+  }
+  return value;
+}
+
+export function oneOf<T extends string>(
+  value: unknown, allowed: readonly T[], field: string, fallback: T, warnings: NormalizeWarnings,
+): T {
+  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
+    warnings.add(`${field} was ${describe(value)}; using ${JSON.stringify(fallback)}`);
+    return fallback;
+  }
+  return value as T;
+}
+
+export function warnUnknown(obj: Record<string, unknown>, known: readonly string[], warnings: NormalizeWarnings): void {
+  const set = new Set(known);
+  for (const key of Object.keys(obj)) {
+    if (!set.has(key)) warnings.add(`unknown field \`${key}\`; ignored`);
+  }
+}
+
+function describe(value: unknown): string {
+  if (value === undefined) return 'missing';
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'an array';
+  return `${typeof value} ${JSON.stringify(value)}`;
 }

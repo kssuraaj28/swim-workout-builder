@@ -1,5 +1,6 @@
 import type { AppState } from '../core/state.ts';
 import { decodeState, encodeState } from '../core/state.ts';
+import type { Warned } from '../core/utils.ts';
 
 export const FILE_NAME = 'swimstate.cbor';
 
@@ -16,6 +17,6 @@ export function downloadState(state: AppState, fileName = FILE_NAME): void {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export async function readStateFromFile(file: File): Promise<AppState> {
+export async function readStateFromFile(file: File): Promise<Warned<AppState>> {
   return decodeState(new Uint8Array(await file.arrayBuffer()));
 }

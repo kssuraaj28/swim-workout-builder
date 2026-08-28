@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { AppState } from '../src/core/state.ts';
 import { STATE_VERSION, createEmptyState, decodeState, encodeState } from '../src/core/state.ts';
 import { kitchenSinkWorkout, metricWorkout } from './example-workouts.ts';
-import { assertNormalizeError } from './support.ts';
+import { assertClean, assertWarned } from './support.ts';
 
 function fullState(): AppState {
   return {
@@ -13,41 +13,56 @@ function fullState(): AppState {
   };
 }
 
-test('a full state survives an encode/decode round trip', () => {
+test('a full state survives an encode/decode round trip with no warnings', () => {
   const before = fullState();
-  assert.deepEqual(decodeState(encodeState(before)), before);
+  const r = decodeState(encodeState(before));
+  assert.deepEqual(r.value, before);
+  assertClean(r);
 });
 
-test('an empty state survives an encode/decode round trip', () => {
+test('an empty state survives an encode/decode round trip with no warnings', () => {
   const before = createEmptyState();
-  assert.deepEqual(decodeState(encodeState(before)), before);
+  const r = decodeState(encodeState(before));
+  assert.deepEqual(r.value, before);
+  assertClean(r);
 });
 
-test('rejects a state file from a different version', () => {
+test('a mismatched version yields an empty state and warns', () => {
   const bytes = encodeState({ ...fullState(), version: STATE_VERSION + 1 });
-  assertNormalizeError(() => decodeState(bytes), 'version');
+  const r = decodeState(bytes);
+  assertWarned(r, 'version');
+  assert.deepEqual(r.value, createEmptyState());
 });
 
-test('rejects bytes that are not CBOR', () => {
-  assertNormalizeError(() => decodeState(new TextEncoder().encode('not cbor')), 'readable state file');
+test('non-CBOR bytes yield an empty state and warn', () => {
+  const r = decodeState(new TextEncoder().encode('not cbor'));
+  assertWarned(r, 'readable state file');
+  assert.deepEqual(r.value, createEmptyState());
 });
 
-test('rejects an empty state file', () => {
-  assertNormalizeError(() => decodeState(new Uint8Array(0)), 'empty');
+test('an empty file yields an empty state and warns', () => {
+  const r = decodeState(new Uint8Array(0));
+  assertWarned(r, 'empty');
+  assert.deepEqual(r.value, createEmptyState());
 });
 
-test('rejects a state file missing its library', () => {
+test('a state file missing its library yields defaults with warnings', () => {
   const bytes = encodeState({ version: STATE_VERSION, workout: kitchenSinkWorkout() } as unknown as AppState);
-  assertNormalizeError(() => decodeState(bytes), 'library');
+  const r = decodeState(bytes);
+  assert.deepEqual(r.value.library, []);
+  assert.deepEqual(r.value.workout, kitchenSinkWorkout());
 });
 
-test('rejects a state file with an unknown top-level field', () => {
+test('a state file with an unknown top-level field warns and drops it', () => {
   const bytes = encodeState({ ...fullState(), extra: 1 } as unknown as AppState);
-  assertNormalizeError(() => decodeState(bytes), 'unknown field');
+  const r = decodeState(bytes);
+  assertWarned(r, 'extra');
+  assert.equal((r.value as unknown as { extra?: number }).extra, undefined);
 });
 
-test('rejects when a workout inside the library is malformed', () => {
+test('a malformed workout inside the library surfaces its warnings', () => {
   const bad = { ...kitchenSinkWorkout(), poolLength: 'twenty' } as unknown as AppState['workout'];
   const bytes = encodeState({ ...fullState(), library: [bad] });
-  assertNormalizeError(() => decodeState(bytes), 'poolLength');
+  const r = decodeState(bytes);
+  assertWarned(r, 'poolLength');
 });

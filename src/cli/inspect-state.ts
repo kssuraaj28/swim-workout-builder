@@ -17,11 +17,9 @@ function loadState(path: string): AppState {
   } catch (err) {
     fail(`Cannot read ${path}: ${err instanceof Error ? err.message : String(err)}`);
   }
-  try {
-    return decodeState(bytes);
-  } catch (err) {
-    fail(`${path}: ${err instanceof Error ? err.message : String(err)}`);
-  }
+  const { value, warnings } = decodeState(bytes);
+  for (const w of warnings) console.error(`warning: ${w}`);
+  return value;
 }
 
 function unit(workout: Workout): string {

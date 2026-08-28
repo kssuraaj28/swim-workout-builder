@@ -1,4 +1,5 @@
-import { asObject, bool, int, normalizeFail, oneOf, rejectUnknown, str, todayDateString } from './utils.ts';
+import type { Warned } from './utils.ts';
+import { NormalizeWarnings, asObject, bool, int, oneOf, str, todayDateString, warnUnknown } from './utils.ts';
 
 // Runtime tuple → derived type pattern:
 //   `as const` freezes the array so each element is its own literal type ('free', not string).
@@ -102,51 +103,74 @@ const WORKOUT_SET_KEYS     = Object.keys(createDefaultSet())     as (keyof Worko
 const WORKOUT_KEYS         = Object.keys(createDefaultWorkout()) as (keyof Workout)[];
 const WORKOUT_OPTIONAL_KEYS: (keyof Workout)[] = ['savedAt'];
 
-export function normalizeWorkoutStep(raw: unknown): WorkoutStep {
-  const obj = asObject(raw);
-  rejectUnknown(obj, WORKOUT_STEP_KEYS, []);
+export function normalizeWorkoutStep(raw: unknown): Warned<WorkoutStep> {
+  const warnings = new NormalizeWarnings();
+  return { value: stepInto(raw, 'step', warnings), warnings };
+}
+
+export function normalizeWorkoutSet(raw: unknown): Warned<WorkoutSet> {
+  const warnings = new NormalizeWarnings();
+  return { value: setInto(raw, 'set', warnings), warnings };
+}
+
+export function normalizeWorkout(raw: unknown): Warned<Workout> {
+  const warnings = new NormalizeWarnings();
+  return { value: workoutInto(raw, 'workout', warnings), warnings };
+}
+
+function stepInto(raw: unknown, field: string, warnings: NormalizeWarnings): WorkoutStep {
+  const base = createDefaultStep();
+  const obj = asObject(raw, field, warnings);
+  warnUnknown(obj, WORKOUT_STEP_KEYS, warnings);
   return {
-    repetitions: int(obj.repetitions, 'repetitions', 1),
-    strokeType: oneOf(obj.strokeType, STROKES, 'strokeType'),
-    distance: int(obj.distance, 'distance', 1),
-    equipment: equipmentList(obj.equipment, 'equipment'),
-    track: bool(obj.track, 'track'),
-    targetPace: str(obj.targetPace, 'targetPace'),
-    description: str(obj.description, 'description'),
-    restType: oneOf(obj.restType, REST_TYPES, 'restType'),
-    restValue: int(obj.restValue, 'restValue', 0),
+    repetitions: int(obj.repetitions, 'repetitions', 1, base.repetitions, warnings),
+    strokeType:  oneOf(obj.strokeType, STROKES, 'strokeType', base.strokeType, warnings),
+    distance:    int(obj.distance, 'distance', 1, base.distance, warnings),
+    equipment:   equipmentInto(obj.equipment, 'equipment', warnings),
+    track:       bool(obj.track, 'track', base.track, warnings),
+    targetPace:  str(obj.targetPace, 'targetPace', base.targetPace, warnings),
+    description: str(obj.description, 'description', base.description, warnings),
+    restType:    oneOf(obj.restType, REST_TYPES, 'restType', base.restType, warnings),
+    restValue:   int(obj.restValue, 'restValue', 0, base.restValue, warnings),
   };
 }
 
-export function normalizeWorkoutSet(raw: unknown): WorkoutSet {
-  const obj = asObject(raw);
-  rejectUnknown(obj, WORKOUT_SET_KEYS, []);
-  if (!Array.isArray(obj.steps)) normalizeFail('steps must be an array');
-  if (obj.steps.length === 0) normalizeFail('steps cannot be empty');
+function setInto(raw: unknown, field: string, warnings: NormalizeWarnings): WorkoutSet {
+  const base = createDefaultSet();
+  const obj = asObject(raw, field, warnings);
+  warnUnknown(obj, WORKOUT_SET_KEYS, warnings);
   return {
-    name: str(obj.name, 'name'),
-    iterations: int(obj.iterations, 'iterations', 1),
-    steps: obj.steps.map(normalizeWorkoutStep),
+    name:       str(obj.name, 'name', base.name, warnings),
+    iterations: int(obj.iterations, 'iterations', 1, base.iterations, warnings),
+    steps:      arrayInto(obj.steps, 'steps', warnings, (s, i) => stepInto(s, `step ${i + 1}`, warnings)),
   };
 }
 
-export function normalizeWorkout(raw: unknown): Workout {
-  const obj = asObject(raw);
-  rejectUnknown(obj, WORKOUT_KEYS, WORKOUT_OPTIONAL_KEYS);
-  if (!Array.isArray(obj.sets)) normalizeFail('sets must be an array');
+function workoutInto(raw: unknown, field: string, warnings: NormalizeWarnings): Workout {
+  const base = createDefaultWorkout();
+  const obj = asObject(raw, field, warnings);
+  warnUnknown(obj, [...WORKOUT_KEYS, ...WORKOUT_OPTIONAL_KEYS], warnings);
   const workout: Workout = {
-    name: str(obj.name, 'name'),
-    createdAt: str(obj.createdAt, 'createdAt'),
-    description: str(obj.description, 'description'),
-    poolLength: int(obj.poolLength, 'poolLength', 1),
-    poolLengthUnit: oneOf(obj.poolLengthUnit, POOL_UNITS, 'poolLengthUnit'),
-    sets: obj.sets.map(normalizeWorkoutSet),
+    name:           str(obj.name, 'name', base.name, warnings),
+    createdAt:      str(obj.createdAt, 'createdAt', base.createdAt, warnings),
+    description:    str(obj.description, 'description', base.description, warnings),
+    poolLength:     int(obj.poolLength, 'poolLength', 1, base.poolLength, warnings),
+    poolLengthUnit: oneOf(obj.poolLengthUnit, POOL_UNITS, 'poolLengthUnit', base.poolLengthUnit, warnings),
+    sets:           arrayInto(obj.sets, 'sets', warnings, (s, i) => setInto(s, `set ${i + 1}`, warnings)),
   };
-  if (obj.savedAt !== undefined) workout.savedAt = str(obj.savedAt, 'savedAt');
+  if (obj.savedAt !== undefined) workout.savedAt = str(obj.savedAt, 'savedAt', '', warnings);
   return workout;
 }
 
-function equipmentList(value: unknown, field: string): EquipmentType[] {
-  if (!Array.isArray(value)) normalizeFail(`${field} must be an array`);
-  return value.map(item => oneOf(item, EQUIPMENT, field));
+function equipmentInto(value: unknown, field: string, warnings: NormalizeWarnings): EquipmentType[] {
+  return arrayInto(value, field, warnings, (item, i) => oneOf(item, EQUIPMENT, `${field}[${i}]`, 'none', warnings));
+}
+
+function arrayInto<T>(value: unknown, field: string, warnings: NormalizeWarnings, item: (v: unknown, i: number) => T): T[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    warnings.add(`${field} was not an array; using []`);
+    return [];
+  }
+  return value.map(item);
 }
