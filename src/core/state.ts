@@ -1,6 +1,7 @@
 import { decode, encode } from 'cbor-x';
 import type { Workout } from './workouts.ts';
-import { createDefaultWorkout } from './workouts.ts';
+import { createDefaultWorkout, normalizeWorkout } from './workouts.ts';
+import { asObject, normalizeFail, rejectUnknown } from './utils.ts';
 
 export const STATE_VERSION = 1;
 
@@ -22,40 +23,33 @@ export function encodeState(state: AppState): Uint8Array {
   return encode(state);
 }
 
-class StateFormatError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'StateFormatError';
-  }
-}
-
 export function decodeState(bytes: Uint8Array): AppState {
-  if (bytes.byteLength === 0) {
-    throw new StateFormatError('State file is empty.');
-  }
+  if (bytes.byteLength === 0) normalizeFail('State file is empty.');
 
   let raw: unknown;
   try {
     raw = decode(bytes);
   } catch (err) {
-    throw new StateFormatError(
-      `Not a readable state file (${err instanceof Error ? err.message : String(err)}).`,
-    );
+    normalizeFail(`Not a readable state file (${err instanceof Error ? err.message : String(err)}).`);
   }
 
-  if (typeof raw !== 'object' || raw === null) {
-    throw new StateFormatError('State file does not contain an object.');
-  }
+  return normalizeAppState(raw);
+}
 
-  const state = raw as Partial<AppState>;
-  if (state.version !== STATE_VERSION) {
-    throw new StateFormatError(
-      `State file is version ${String(state.version)}, this build reads version ${STATE_VERSION}.`,
-    );
-  }
-  if (!Array.isArray(state.library) || typeof state.workout !== 'object' || state.workout === null) {
-    throw new StateFormatError('State file is missing a workout or library.');
-  }
+const APP_STATE_KEYS = Object.keys(createEmptyState()) as (keyof AppState)[];
 
-  return { version: STATE_VERSION, workout: state.workout, library: state.library };
+function normalizeAppState(raw: unknown): AppState {
+  const obj = asObject(raw);
+  rejectUnknown(obj, APP_STATE_KEYS, []);
+
+  if (obj.version !== STATE_VERSION) {
+    normalizeFail(`State file is version ${String(obj.version)}, this build reads version ${STATE_VERSION}.`);
+  }
+  if (!Array.isArray(obj.library)) normalizeFail('library must be an array');
+
+  return {
+    version: STATE_VERSION,
+    workout: normalizeWorkout(obj.workout),
+    library: obj.library.map(normalizeWorkout),
+  };
 }

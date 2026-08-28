@@ -34,6 +34,6 @@ test('rejects bytes that are not CBOR', () => {
 test('rejects a state file missing its workout or library', () => {
   assert.throws(
     () => decodeState(encodeState({ version: STATE_VERSION } as unknown as AppState)),
-    /missing a workout or library/,
+    /library/,
   );
 });

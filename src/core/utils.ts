@@ -6,6 +6,13 @@ export function normalizeFail(message: string): never {
 }
 
 
+export function rejectUnknown(obj: Record<string, unknown>, required: readonly string[], optional: readonly string[]): void {
+  const known = new Set<string>([...required, ...optional]);
+  for (const key of Object.keys(obj)) {
+    if (!known.has(key)) normalizeFail(`unknown field \`${key}\``);
+  }
+}
+
 export function asObject(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     normalizeFail('must be an object');

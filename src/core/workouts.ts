@@ -1,4 +1,4 @@
-import { asObject, bool, int, normalizeFail, oneOf, str, todayDateString } from './utils.ts';
+import { asObject, bool, int, normalizeFail, oneOf, rejectUnknown, str, todayDateString } from './utils.ts';
 
 // Runtime tuple → derived type pattern:
 //   `as const` freezes the array so each element is its own literal type ('free', not string).
@@ -144,13 +144,6 @@ export function normalizeWorkout(raw: unknown): Workout {
   };
   if (obj.savedAt !== undefined) workout.savedAt = str(obj.savedAt, 'savedAt');
   return workout;
-}
-
-function rejectUnknown(obj: Record<string, unknown>, required: readonly string[], optional: readonly string[]): void {
-  const known = new Set<string>([...required, ...optional]);
-  for (const key of Object.keys(obj)) {
-    if (!known.has(key)) normalizeFail(`unknown field \`${key}\``);
-  }
 }
 
 function equipmentList(value: unknown, field: string): EquipmentType[] {
