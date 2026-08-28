@@ -1,8 +1,12 @@
 import { useRef } from 'react';
 import type { AppState } from '../core/state.ts';
+import type { NormalizeWarnings } from '../core/utils.ts';
 import { FILE_NAME, readStateFromFile } from './import-export.ts';
 
 export type AppMode = 'workout' | 'info';
+
+/** Presenter for normalize warnings. App decides how they appear (alert, banner, etc.). */
+export type ShowWarnings = (source: string, warnings: NormalizeWarnings) => void;
 
 /** Header height — kept in sync with `h-14` so sidebars can offset their sticky position. */
 const HEADER_HEIGHT_CLASS = 'h-14';
@@ -14,18 +18,17 @@ interface HeaderProps {
   onModeChange: (mode: AppMode) => void;
   onImport: (state: AppState) => void;
   onExport: () => void;
+  showWarnings: ShowWarnings;
 }
 
-export function Header({ mode, onModeChange, onImport, onExport }: HeaderProps) {
+export function Header({ mode, onModeChange, onImport, onExport, showWarnings }: HeaderProps) {
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
     const { value, warnings } = await readStateFromFile(file);
     onImport(value);
-    if (warnings.length > 0) {
-      alert(`Loaded ${file.name} with ${warnings.length} warning(s):\n\n${[...warnings].join('\n')}`);
-    }
+    showWarnings(file.name, warnings);
   };
 
   return (
