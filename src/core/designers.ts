@@ -37,10 +37,12 @@ export const STARTER_DESIGNER: Designer = {
   variation: [
     { identifier: 'stroke', options: ['free', 'backstroke', 'breaststroke', 'butterfly'] },
     { identifier: 'distance', options: ['100', '200'] },
+    { identifier: 'equipment', options: ['none', 'fins', 'pull_buoy', 'paddles'] },
   ],
   overload: [
     { identifier: 'reps', options: ['8', '10', '12'] },
     { identifier: 'sendOff', options: ['90', '95', '100'] },
+    { identifier: 'targetPace', options: ['1:30', '1:35', '1:40', '1:45'] },
   ],
   source: `return {
   name: 'Endurance ' + variation.stroke,
@@ -50,9 +52,9 @@ export const STARTER_DESIGNER: Designer = {
       repetitions: Number(overload.reps),
       strokeType: variation.stroke,
       distance: Number(variation.distance),
-      equipment: [],
+      equipment: variation.equipment === 'none' ? [] : [variation.equipment],
       track: true,
-      targetPace: '',
+      targetPace: overload.targetPace,
       description: '',
       restType: 'interval',
       restValue: Number(overload.sendOff),
