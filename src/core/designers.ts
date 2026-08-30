@@ -1,14 +1,11 @@
 import type { Warned } from './utils.ts';
-import { NormalizeWarnings, arrayInto, asObject, oneOf, str, warnUnknown } from './utils.ts';
+import { NormalizeWarnings, arrayInto, asObject, str, warnUnknown } from './utils.ts';
 import type { WorkoutSet } from './workouts.ts';
 import { createDefaultSet, normalizeWorkoutSet } from './workouts.ts';
 
-export const KINDS = ['number', 'string', 'boolean'] as const;
-export type ParamKind = typeof KINDS[number];
-
 export interface Param {
   identifier: string;
-  kind: ParamKind;
+  options: string[];
 }
 
 export interface Designer {
@@ -20,7 +17,7 @@ export interface Designer {
 }
 
 export function createDefaultParam(): Param {
-  return { identifier: '', kind: 'number' };
+  return { identifier: '', options: [] };
 }
 
 export function createDefaultDesigner(): Designer {
@@ -33,22 +30,41 @@ export function createDefaultDesigner(): Designer {
   };
 }
 
+/** Populated example the Design Set editor opens with so a first-time user sees the shape. */
+export const STARTER_DESIGNER: Designer = {
+  id: 'endurance-free',
+  description: 'Aerobic base pull sets.',
+  variation: [
+    { identifier: 'stroke', options: ['free', 'backstroke', 'breaststroke', 'butterfly'] },
+    { identifier: 'distance', options: ['100', '200'] },
+  ],
+  overload: [
+    { identifier: 'reps', options: ['8', '10', '12'] },
+    { identifier: 'sendOff', options: ['90', '95', '100'] },
+  ],
+  source: `return {
+  name: 'Endurance ' + variation.stroke,
+  iterations: 1,
+  steps: [
+    {
+      repetitions: Number(overload.reps),
+      strokeType: variation.stroke,
+      distance: Number(variation.distance),
+      equipment: [],
+      track: true,
+      targetPace: '',
+      description: '',
+      restType: 'interval',
+      restValue: Number(overload.sendOff),
+    },
+  ],
+};
+`,
+};
+
 export function normalizeDesigner(raw: unknown): Warned<Designer> {
   const warnings = new NormalizeWarnings();
   return { value: designerInto(raw, 'designer', warnings), warnings };
-}
-
-const PARAM_KEYS     = Object.keys(createDefaultParam())    as (keyof Param)[];
-const DESIGNER_KEYS  = Object.keys(createDefaultDesigner()) as (keyof Designer)[];
-
-function paramInto(raw: unknown, field: string, warnings: NormalizeWarnings): Param {
-  const base = createDefaultParam();
-  const obj = asObject(raw, field, warnings);
-  warnUnknown(obj, PARAM_KEYS, warnings);
-  return {
-    identifier: str(obj.identifier, 'identifier', base.identifier, warnings),
-    kind:       oneOf(obj.kind, KINDS, 'kind', base.kind, warnings),
-  };
 }
 
 export function buildSetFromDesigner(
@@ -65,6 +81,19 @@ export function buildSetFromDesigner(
     return { value: createDefaultSet(), warnings };
   }
   return normalizeWorkoutSet(raw);
+}
+
+const PARAM_KEYS     = Object.keys(createDefaultParam())    as (keyof Param)[];
+const DESIGNER_KEYS  = Object.keys(createDefaultDesigner()) as (keyof Designer)[];
+
+function paramInto(raw: unknown, field: string, warnings: NormalizeWarnings): Param {
+  const base = createDefaultParam();
+  const obj = asObject(raw, field, warnings);
+  warnUnknown(obj, PARAM_KEYS, warnings);
+  return {
+    identifier: str(obj.identifier, 'identifier', base.identifier, warnings),
+    options:    arrayInto(obj.options, 'options', warnings, (o, i) => str(o, `options[${i}]`, '', warnings)),
+  };
 }
 
 function designerInto(raw: unknown, field: string, warnings: NormalizeWarnings): Designer {

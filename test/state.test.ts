@@ -10,8 +10,8 @@ function sampleDesigner(): Designer {
   return {
     id: 'endurance-free',
     description: 'Aerobic base',
-    variation: [{ identifier: 'stroke', kind: 'string' }],
-    overload: [{ identifier: 'reps', kind: 'number' }],
+    variation: [{ identifier: 'stroke', options: ['free', 'backstroke'] }],
+    overload: [{ identifier: 'reps', options: ['8', '10', '12'] }],
     source: 'return { name: "x", iterations: 1, steps: [] };',
   };
 }

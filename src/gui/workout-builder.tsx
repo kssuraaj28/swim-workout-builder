@@ -40,7 +40,7 @@ interface Props {
   showWarnings: ShowWarnings;
 }
 
-type Values = Record<string, string | boolean>;
+type Values = Record<string, string>;
 interface DesignerDraft {
   id: string;
   variation: Values;
@@ -49,16 +49,7 @@ interface DesignerDraft {
 
 function initValues(params: Param[]): Values {
   const r: Values = {};
-  for (const p of params) r[p.identifier] = p.kind === 'boolean' ? false : '';
-  return r;
-}
-
-function convertValues(params: Param[], values: Values): Record<string, unknown> {
-  const r: Record<string, unknown> = {};
-  for (const p of params) {
-    const v = values[p.identifier];
-    r[p.identifier] = p.kind === 'number' ? Number(v) : v;
-  }
+  for (const p of params) r[p.identifier] = p.options[0] ?? '';
   return r;
 }
 
@@ -110,7 +101,7 @@ export function WorkoutBuilder({
   const updateDesignerValue = (
     section: 'variation' | 'overload',
     identifier: string,
-    value: string | boolean,
+    value: string,
   ) => {
     setDesignerDraft(d => d && ({
       ...d,
@@ -122,9 +113,7 @@ export function WorkoutBuilder({
     if (!designerDraft) return;
     const designer = designers.find(d => d.id === designerDraft.id);
     if (!designer) return;
-    const v = convertValues(designer.variation, designerDraft.variation);
-    const o = convertValues(designer.overload, designerDraft.overload);
-    const { value, warnings } = buildSetFromDesigner(designer, v, o);
+    const { value, warnings } = buildSetFromDesigner(designer, designerDraft.variation, designerDraft.overload);
     updateSets([...workout.sets, value]);
     setDesignerDraft(null);
     showWarnings(`designer ${designer.id}`, warnings);
@@ -436,7 +425,7 @@ function ParamInputs({
   title: string;
   params: Param[];
   values: Values;
-  onChange: (identifier: string, value: string | boolean) => void;
+  onChange: (identifier: string, value: string) => void;
 }) {
   if (params.length === 0) return null;
   return (
@@ -445,20 +434,13 @@ function ParamInputs({
       {params.map(p => (
         <label key={p.identifier} className="flex items-center gap-2 text-sm text-gray-600">
           <span className="w-32 font-mono truncate">{p.identifier}</span>
-          {p.kind === 'boolean' ? (
-            <input
-              type="checkbox"
-              checked={values[p.identifier] as boolean}
-              onChange={e => onChange(p.identifier, e.target.checked)}
-            />
-          ) : (
-            <input
-              type={p.kind === 'number' ? 'number' : 'text'}
-              value={values[p.identifier] as string}
-              onChange={e => onChange(p.identifier, e.target.value)}
-              className="flex-1 min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
-            />
-          )}
+          <select
+            value={values[p.identifier] ?? ''}
+            onChange={e => onChange(p.identifier, e.target.value)}
+            className="flex-1 min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white"
+          >
+            {p.options.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
         </label>
       ))}
     </div>

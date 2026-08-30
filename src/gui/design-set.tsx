@@ -1,44 +1,54 @@
 import { useState } from 'react';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
-import type { Designer, Param, ParamKind } from '../core/designers.ts';
-import { KINDS, createDefaultDesigner } from '../core/designers.ts';
+import type { Designer, Param } from '../core/designers.ts';
+import { STARTER_DESIGNER, createDefaultDesigner } from '../core/designers.ts';
 
-const EMPTY_PARAM: Param = { identifier: '', kind: 'number' };
-
-const ROW_GRID = 'grid grid-cols-[1fr_110px_28px] gap-2';
+const ROW_GRID = 'grid grid-cols-[1fr_2fr_28px] gap-2';
 const ROW_INPUT = 'w-full min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900';
 
-/** Populated example so a first-time user sees the shape of a designer. */
-const STARTER_DESIGNER: Designer = {
-  id: 'endurance-free',
-  description: 'Aerobic base pull sets.',
-  variation: [
-    { identifier: 'stroke', kind: 'string' },
-    { identifier: 'distance', kind: 'number' },
-  ],
-  overload: [
-    { identifier: 'reps', kind: 'number' },
-    { identifier: 'sendOff', kind: 'number' },
-  ],
-  source: `return {
-  name: 'Endurance ' + variation.stroke,
-  iterations: 1,
-  steps: [
-    {
-      repetitions: overload.reps,
-      strokeType: variation.stroke,
-      distance: variation.distance,
-      equipment: [],
-      track: true,
-      targetPace: '',
-      description: '',
-      restType: 'interval',
-      restValue: overload.sendOff,
-    },
-  ],
-};
-`,
-};
+/** Design-time editing shape: options is a raw comma-separated string so the user can type freely. */
+interface ParamEdit {
+  identifier: string;
+  optionsText: string;
+}
+
+interface DesignerEdit {
+  id: string;
+  description: string;
+  variation: ParamEdit[];
+  overload: ParamEdit[];
+  source: string;
+}
+
+const EMPTY_PARAM: ParamEdit = { identifier: '', optionsText: '' };
+
+function toEdit(d: Designer): DesignerEdit {
+  const toParam = (p: Param): ParamEdit => ({
+    identifier: p.identifier,
+    optionsText: p.options.join(', '),
+  });
+  return {
+    id: d.id,
+    description: d.description,
+    variation: d.variation.map(toParam),
+    overload: d.overload.map(toParam),
+    source: d.source,
+  };
+}
+
+function fromEdit(d: DesignerEdit): Designer {
+  const toParam = (p: ParamEdit): Param => ({
+    identifier: p.identifier,
+    options: p.optionsText.split(',').map(s => s.trim()).filter(Boolean),
+  });
+  return {
+    id: d.id,
+    description: d.description,
+    variation: d.variation.map(toParam),
+    overload: d.overload.map(toParam),
+    source: d.source,
+  };
+}
 
 interface Props {
   designers: Designer[];
@@ -47,9 +57,9 @@ interface Props {
 }
 
 export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props) {
-  const [editing, setEditing] = useState<Designer>(STARTER_DESIGNER);
+  const [editing, setEditing] = useState<DesignerEdit>(() => toEdit(STARTER_DESIGNER));
 
-  const patch = (p: Partial<Designer>) => setEditing({ ...editing, ...p });
+  const patch = (p: Partial<DesignerEdit>) => setEditing({ ...editing, ...p });
 
   return (
     <div className="flex">
@@ -65,7 +75,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
               {designers.map(d => (
                 <li key={d.id} className="flex items-center gap-1">
                   <button
-                    onClick={() => setEditing(d)}
+                    onClick={() => setEditing(toEdit(d))}
                     className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
                       d.id === editing.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
                     }`}
@@ -91,7 +101,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
         </div>
         <div className="p-3 border-t border-gray-200">
           <button
-            onClick={() => setEditing(createDefaultDesigner())}
+            onClick={() => setEditing(toEdit(createDefaultDesigner()))}
             className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
           >
             + New Designer
@@ -124,7 +134,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
 
           <div className="flex justify-end">
             <button
-              onClick={() => onSaveDesigner(editing)}
+              onClick={() => onSaveDesigner(fromEdit(editing))}
               disabled={!editing.id.trim()}
               className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
               title={editing.id.trim() ? 'Save designer' : 'Give the designer an id first'}
@@ -142,10 +152,10 @@ function ParamSection({
   title, rows, onChange,
 }: {
   title: string;
-  rows: Param[];
-  onChange: (rows: Param[]) => void;
+  rows: ParamEdit[];
+  onChange: (rows: ParamEdit[]) => void;
 }) {
-  const update = (i: number, p: Partial<Param>) => {
+  const update = (i: number, p: Partial<ParamEdit>) => {
     const next = [...rows];
     next[i] = { ...next[i], ...p };
     onChange(next);
@@ -159,7 +169,7 @@ function ParamSection({
       <div className="space-y-2">
         <div className={`${ROW_GRID} text-xs text-gray-500 px-1`}>
           <div>Identifier</div>
-          <div>Kind</div>
+          <div>Options</div>
           <div></div>
         </div>
         {rows.map((row, i) => (
@@ -171,13 +181,13 @@ function ParamSection({
               placeholder="identifier"
               className={`${ROW_INPUT} font-mono`}
             />
-            <select
-              value={row.kind}
-              onChange={e => update(i, { kind: e.target.value as ParamKind })}
-              className={`${ROW_INPUT} bg-white`}
-            >
-              {KINDS.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
+            <input
+              type="text"
+              value={row.optionsText}
+              onChange={e => update(i, { optionsText: e.target.value })}
+              placeholder="option1, option2"
+              className={ROW_INPUT}
+            />
             <button
               onClick={() => remove(i)}
               className="text-red-400 hover:text-red-600 text-lg leading-none"
