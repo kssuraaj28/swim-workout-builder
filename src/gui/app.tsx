@@ -6,8 +6,8 @@ import type { AppState } from '../core/state.ts';
 import { createEmptyState } from '../core/state.ts';
 import { WorkoutBuilder } from './workout-builder.tsx';
 import { InfoPage } from './info-page.tsx';
-import { DesignSet } from './design-set.tsx';
-import { BlockBuilder } from './block-builder.tsx';
+import { DesignSet, initialDesignerEditor, type DesignerEditor } from './design-set.tsx';
+import { BlockBuilder, initialBlockEditor, type BlockEditor } from './block-builder.tsx';
 import { downloadState } from './import-export.ts';
 
 const showWarnings: ShowWarnings = (source, warnings) => {
@@ -18,6 +18,8 @@ const showWarnings: ShowWarnings = (source, warnings) => {
 function App() {
   const [mode, setMode] = useState<AppMode>('workout');
   const [state, setState] = useState<AppState>(createEmptyState);
+  const [designerEditor, setDesignerEditor] = useState<DesignerEditor>(initialDesignerEditor);
+  const [blockEditor, setBlockEditor] = useState<BlockEditor>(initialBlockEditor);
 
   const { workout, library, designers } = state;
   const setWorkout = (workout: Workout) => setState(s => ({ ...s, workout }));
@@ -61,9 +63,17 @@ function App() {
           onSaveDesigner={handleSaveDesigner}
           onDeleteDesigner={handleDeleteDesigner}
           showWarnings={showWarnings}
+          editor={designerEditor}
+          setEditor={setDesignerEditor}
         />
       )}
-      {mode === 'block' && <BlockBuilder />}
+      {mode === 'block' && (
+        <BlockBuilder
+          designers={designers}
+          editor={blockEditor}
+          setEditor={setBlockEditor}
+        />
+      )}
       {mode === 'info' && <InfoPage />}
     </div>
   );

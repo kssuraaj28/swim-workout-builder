@@ -1,4 +1,5 @@
-import { useState } from 'react';
+/* eslint-disable react-refresh/only-export-components -- editor state factory colocated with the component */
+import type { Dispatch, SetStateAction } from 'react';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
 import type { Designer, Param } from '../core/designers.ts';
 import { STARTER_DESIGNER, buildSetFromDesigner, createDefaultDesigner } from '../core/designers.ts';
@@ -58,18 +59,38 @@ function fromEdit(d: DesignerEdit): Designer {
   };
 }
 
+/** Editor state lifted to App so it survives tab switches. */
+export interface DesignerEditor {
+  editing: DesignerEdit;
+  testVariation: Values;
+  testOverload: Values;
+  testSet: WorkoutSet | null;
+}
+
+export function initialDesignerEditor(): DesignerEditor {
+  return {
+    editing: toEdit(STARTER_DESIGNER),
+    testVariation: {},
+    testOverload: {},
+    testSet: null,
+  };
+}
+
 interface Props {
   designers: Designer[];
   onSaveDesigner: (designer: Designer) => void;
   onDeleteDesigner: (id: string) => void;
   showWarnings: ShowWarnings;
+  editor: DesignerEditor;
+  setEditor: Dispatch<SetStateAction<DesignerEditor>>;
 }
 
-export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWarnings }: Props) {
-  const [editing, setEditing] = useState<DesignerEdit>(() => toEdit(STARTER_DESIGNER));
-  const [testVariation, setTestVariation] = useState<Values>({});
-  const [testOverload, setTestOverload] = useState<Values>({});
-  const [testSet, setTestSet] = useState<WorkoutSet | null>(null);
+export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWarnings, editor, setEditor }: Props) {
+  const { editing, testVariation, testOverload, testSet } = editor;
+  const setEditing = (v: DesignerEdit) => setEditor(e => ({ ...e, editing: v }));
+  const setTestVariation = (v: Values) => setEditor(e => ({ ...e, testVariation: v }));
+  const setTestOverload = (v: Values) => setEditor(e => ({ ...e, testOverload: v }));
+  const setTestSet = (v: WorkoutSet | null) => setEditor(e => ({ ...e, testSet: v }));
 
   const patch = (p: Partial<DesignerEdit>) => setEditing({ ...editing, ...p });
 
