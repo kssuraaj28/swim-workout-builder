@@ -5,7 +5,8 @@ import { STARTER_DESIGNER, buildSetFromDesigner, createDefaultDesigner } from '.
 import type { WorkoutSet } from '../core/workouts.ts';
 import { SetCard } from './set-card.tsx';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
-import { EMPTY_STATE, SECTION_HEADING, SECTION_LABEL } from './styles.ts';
+import { SECTION_HEADING } from './styles.ts';
+import { SidebarList } from './sidebar-list.tsx';
 
 const ROW_GRID = 'grid grid-cols-[1fr_2fr_28px] gap-2';
 const ROW_INPUT = 'w-full min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900';
@@ -82,49 +83,46 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
   return (
     <div className="flex">
       <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
-        <div className={`p-3 border-b border-gray-200 ${SECTION_LABEL}`}>
-          Designers
-        </div>
-        <div className="flex-1 overflow-auto p-3">
-          {designers.length === 0 ? (
-            <div className={EMPTY_STATE}>No designers yet.</div>
-          ) : (
-            <ul className="space-y-1">
-              {designers.map(d => (
-                <li key={d.id} className="flex items-center gap-1">
-                  <button
-                    onClick={() => setEditing(toEdit(d))}
-                    className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                      d.id === editing.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                    }`}
-                  >
-                    <div className="truncate font-mono">{d.id}</div>
-                    {d.description && (
-                      <div className="text-xs text-gray-500 truncate">{d.description}</div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Delete designer "${d.id}"?`)) onDeleteDesigner(d.id);
-                    }}
-                    className="text-red-400 hover:text-red-600 text-lg leading-none px-1"
-                    title="Delete"
-                  >
-                    &times;
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="p-3 border-t border-gray-200">
-          <button
-            onClick={() => setEditing(toEdit(createDefaultDesigner()))}
-            className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
-          >
-            + New Designer
-          </button>
-        </div>
+        <SidebarList
+          title="Designers"
+          isEmpty={designers.length === 0}
+          emptyMessage="No designers yet."
+          footer={
+            <button
+              onClick={() => setEditing(toEdit(createDefaultDesigner()))}
+              className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
+            >
+              + New Designer
+            </button>
+          }
+        >
+          <ul className="p-3 space-y-1">
+            {designers.map(d => (
+              <li key={d.id} className="flex items-center gap-1">
+                <button
+                  onClick={() => setEditing(toEdit(d))}
+                  className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
+                    d.id === editing.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                  }`}
+                >
+                  <div className="truncate font-mono">{d.id}</div>
+                  {d.description && (
+                    <div className="text-xs text-gray-500 truncate">{d.description}</div>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete designer "${d.id}"?`)) onDeleteDesigner(d.id);
+                  }}
+                  className="text-red-400 hover:text-red-600 text-lg leading-none px-1"
+                  title="Delete"
+                >
+                  &times;
+                </button>
+              </li>
+            ))}
+          </ul>
+        </SidebarList>
       </aside>
 
       <div className="flex-1 min-w-0">
