@@ -3,6 +3,8 @@ import type { Workout } from './workouts.ts';
 import { createDefaultWorkout, normalizeWorkout } from './workouts.ts';
 import type { Designer } from './designers.ts';
 import { normalizeDesigner } from './designers.ts';
+import type { Block } from './blocks.ts';
+import { normalizeBlock } from './blocks.ts';
 import type { Warned } from './utils.ts';
 import { NormalizeWarnings, asObject, warnUnknown, warnedArrayInto } from './utils.ts';
 
@@ -13,6 +15,7 @@ export interface AppState {
   workout: Workout;
   library: Workout[];
   designers: Designer[];
+  blocks: Block[];
 }
 
 export function createEmptyState(): AppState {
@@ -21,6 +24,7 @@ export function createEmptyState(): AppState {
     workout: createDefaultWorkout(),
     library: [],
     designers: [],
+    blocks: [],
   };
 }
 
@@ -59,9 +63,10 @@ export function decodeState(bytes: Uint8Array): Warned<AppState> {
 
   const library = warnedArrayInto(obj.library, 'library', warnings, normalizeWorkout);
   const designers = warnedArrayInto(obj.designers, 'designers', warnings, normalizeDesigner);
+  const blocks = warnedArrayInto(obj.blocks, 'blocks', warnings, normalizeBlock);
 
   return {
-    value: { version: STATE_VERSION, workout: workoutResult.value, library, designers },
+    value: { version: STATE_VERSION, workout: workoutResult.value, library, designers, blocks },
     warnings,
   };
 }

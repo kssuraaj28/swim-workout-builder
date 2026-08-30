@@ -2,28 +2,11 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
 import type { Designer } from '../core/designers.ts';
+import type { Block, Day, DesignerUse, Ingredient, IngredientRef, Schedule } from '../core/blocks.ts';
+import { DAYS, createDefaultBlock } from '../core/blocks.ts';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
 import { SidebarList } from './sidebar-list.tsx';
-
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
-type Day = typeof DAYS[number];
-
-interface DesignerUse {
-  designerId: string;
-  variation: Values;
-}
-
-type Ingredient =
-  | { kind: 'swim'; description: string; designers: DesignerUse[] }
-  | { kind: 'other'; text: string };
-
-type IngredientRef = number | null;
-type Schedule = Record<Day, [IngredientRef, IngredientRef]>;
-
-const emptySchedule = (): Schedule => Object.fromEntries(
-  DAYS.map(d => [d, [null, null] as [IngredientRef, IngredientRef]]),
-) as Schedule;
 
 /** Add-designer panel target: either a brand-new ingredient or an existing one by index. */
 type AddTarget = { kind: 'new' } | { kind: 'existing'; index: number };
@@ -44,12 +27,19 @@ export interface BlockEditor {
 }
 
 export function initialBlockEditor(): BlockEditor {
+  return { ...createDefaultBlock(), adding: null };
+}
+
+function toEditor(block: Block): BlockEditor {
+  return { ...block, adding: null };
+}
+
+function fromEditor(editor: BlockEditor): Block {
   return {
-    id: '',
-    description: '',
-    ingredients: [],
-    schedule: emptySchedule(),
-    adding: null,
+    id: editor.id,
+    description: editor.description,
+    ingredients: editor.ingredients,
+    schedule: editor.schedule,
   };
 }
 
@@ -57,9 +47,12 @@ interface Props {
   designers: Designer[];
   editor: BlockEditor;
   setEditor: Dispatch<SetStateAction<BlockEditor>>;
+  blocks: Block[];
+  onSaveBlock: (block: Block) => void;
+  onDeleteBlock: (id: string) => void;
 }
 
-export function BlockBuilder({ designers, editor, setEditor }: Props) {
+export function BlockBuilder({ designers, editor, setEditor, blocks, onSaveBlock, onDeleteBlock }: Props) {
   const { id, description, ingredients, schedule, adding } = editor;
   const setId = (v: string) => setEditor(e => ({ ...e, id: v }));
   const setDescription = (v: string) => setEditor(e => ({ ...e, description: v }));
@@ -148,17 +141,43 @@ export function BlockBuilder({ designers, editor, setEditor }: Props) {
       <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
         <SidebarList
           title="Blocks"
-          isEmpty
+          isEmpty={blocks.length === 0}
           emptyMessage="No blocks yet."
           footer={
             <button
+              onClick={() => setEditor(initialBlockEditor())}
               className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
             >
               + New Block
             </button>
           }
         >
-          <ul />
+          <ul className="p-3 space-y-1">
+            {blocks.map(b => (
+              <li key={b.id} className="flex items-center gap-1">
+                <button
+                  onClick={() => setEditor(toEditor(b))}
+                  className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
+                    b.id === id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                  }`}
+                >
+                  <div className="truncate font-mono">{b.id}</div>
+                  {b.description && (
+                    <div className="text-xs text-gray-500 truncate">{b.description}</div>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete block "${b.id}"?`)) onDeleteBlock(b.id);
+                  }}
+                  className="text-red-400 hover:text-red-600 text-lg leading-none px-1"
+                  title="Delete"
+                >
+                  &times;
+                </button>
+              </li>
+            ))}
+          </ul>
         </SidebarList>
       </aside>
 
@@ -322,6 +341,7 @@ export function BlockBuilder({ designers, editor, setEditor }: Props) {
 
           <div className="flex justify-end">
             <button
+              onClick={() => onSaveBlock(fromEditor(editor))}
               disabled={!id.trim()}
               className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
               title={id.trim() ? 'Save block' : 'Give the block an id first'}

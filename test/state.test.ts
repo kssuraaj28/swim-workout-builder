@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import type { AppState } from '../src/core/state.ts';
 import { STATE_VERSION, createEmptyState, decodeState, encodeState } from '../src/core/state.ts';
 import type { Designer } from '../src/core/designers.ts';
+import type { Block } from '../src/core/blocks.ts';
+import { emptySchedule } from '../src/core/blocks.ts';
 import { kitchenSinkWorkout, metricWorkout } from './example-workouts.ts';
 import { assertClean, assertWarned } from './support.ts';
 
@@ -16,12 +18,25 @@ function sampleDesigner(): Designer {
   };
 }
 
+function sampleBlock(): Block {
+  return {
+    id: '2026-08-base',
+    description: 'August base block',
+    ingredients: [
+      { kind: 'swim', description: 'Endurance', designers: [{ designerId: 'endurance-free', variation: { stroke: 'free' } }] },
+      { kind: 'other', text: 'Gym: squat 3x8' },
+    ],
+    schedule: { ...emptySchedule(), monday: [0, 1], wednesday: [0, null] },
+  };
+}
+
 function fullState(): AppState {
   return {
     version: STATE_VERSION,
     workout: kitchenSinkWorkout(),
     library: [metricWorkout(), kitchenSinkWorkout()],
     designers: [sampleDesigner()],
+    blocks: [sampleBlock()],
   };
 }
 
@@ -90,4 +105,22 @@ test('a malformed designer inside the designers array surfaces its warnings', ()
   const bytes = encodeState({ ...fullState(), designers: [bad] });
   const r = decodeState(bytes);
   assertWarned(r, 'variation');
+});
+
+test('a state file missing its blocks field loads with an empty list', () => {
+  const bytes = encodeState({
+    version: STATE_VERSION,
+    workout: kitchenSinkWorkout(),
+    library: [],
+    designers: [],
+  } as unknown as AppState);
+  const r = decodeState(bytes);
+  assert.deepEqual(r.value.blocks, []);
+});
+
+test('a malformed block inside the blocks array surfaces its warnings', () => {
+  const bad = { ...sampleBlock(), schedule: 'nope' } as unknown as Block;
+  const bytes = encodeState({ ...fullState(), blocks: [bad] });
+  const r = decodeState(bytes);
+  assertWarned(r, 'schedule');
 });

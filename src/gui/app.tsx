@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header, type AppMode, type ShowWarnings } from './header.tsx';
 import type { Workout } from '../core/workouts.ts';
 import type { Designer } from '../core/designers.ts';
+import type { Block } from '../core/blocks.ts';
 import type { AppState } from '../core/state.ts';
 import { createEmptyState } from '../core/state.ts';
 import { WorkoutBuilder } from './workout-builder.tsx';
@@ -21,7 +22,7 @@ function App() {
   const [designerEditor, setDesignerEditor] = useState<DesignerEditor>(initialDesignerEditor);
   const [blockEditor, setBlockEditor] = useState<BlockEditor>(initialBlockEditor);
 
-  const { workout, library, designers } = state;
+  const { workout, library, designers, blocks } = state;
   const setWorkout = (workout: Workout) => setState(s => ({ ...s, workout }));
   const setLibrary = (library: Workout[]) => setState(s => ({ ...s, library }));
 
@@ -36,6 +37,17 @@ function App() {
 
   const handleDeleteDesigner = (id: string) => {
     setState(s => ({ ...s, designers: s.designers.filter(d => d.id !== id) }));
+  };
+
+  const handleSaveBlock = (block: Block) => {
+    setState(s => ({
+      ...s,
+      blocks: [...s.blocks.filter(b => b.id !== block.id), block],
+    }));
+  };
+
+  const handleDeleteBlock = (id: string) => {
+    setState(s => ({ ...s, blocks: s.blocks.filter(b => b.id !== id) }));
   };
 
   return (
@@ -72,6 +84,9 @@ function App() {
           designers={designers}
           editor={blockEditor}
           setEditor={setBlockEditor}
+          blocks={blocks}
+          onSaveBlock={handleSaveBlock}
+          onDeleteBlock={handleDeleteBlock}
         />
       )}
       {mode === 'info' && <InfoPage />}
