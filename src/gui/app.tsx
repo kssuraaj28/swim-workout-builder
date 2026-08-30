@@ -7,6 +7,7 @@ import { createEmptyState } from '../core/state.ts';
 import { WorkoutBuilder } from './workout-builder.tsx';
 import { InfoPage } from './info-page.tsx';
 import { DesignSet } from './design-set.tsx';
+import { BlockBuilder } from './block-builder.tsx';
 import { downloadState } from './import-export.ts';
 
 const showWarnings: ShowWarnings = (source, warnings) => {
@@ -62,6 +63,7 @@ function App() {
           showWarnings={showWarnings}
         />
       )}
+      {mode === 'block' && <BlockBuilder />}
       {mode === 'info' && <InfoPage />}
     </div>
   );

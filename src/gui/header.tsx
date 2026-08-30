@@ -3,7 +3,7 @@ import type { AppState } from '../core/state.ts';
 import type { NormalizeWarnings } from '../core/utils.ts';
 import { FILE_NAME, readStateFromFile } from './import-export.ts';
 
-export type AppMode = 'workout' | 'design' | 'info';
+export type AppMode = 'workout' | 'design' | 'block' | 'info';
 
 /** Presenter for normalize warnings. App decides how they appear (alert, banner, etc.). */
 export type ShowWarnings = (source: string, warnings: NormalizeWarnings) => void;
@@ -64,6 +64,7 @@ export function Header({ mode, onModeChange, onImport, onExport, showWarnings }:
           <div className="ml-4 flex rounded-lg border border-gray-300 overflow-hidden">
             <ModeButton label="Build Workout" active={mode === 'workout'} onClick={() => onModeChange('workout')} />
             <ModeButton label="Design Set" active={mode === 'design'} onClick={() => onModeChange('design')} borderLeft />
+            <ModeButton label="Block Builder" active={mode === 'block'} onClick={() => onModeChange('block')} borderLeft />
             <ModeButton label="Info" active={mode === 'info'} onClick={() => onModeChange('info')} borderLeft />
           </div>
         </div>
