@@ -1,5 +1,6 @@
 import type { Workout, WorkoutKey } from '../core/workouts.ts';
 import { calcTotalDistance } from '../core/workouts.ts';
+import { EMPTY_STATE, SECTION_LABEL } from './styles.ts';
 
 interface WorkoutLibraryProps {
   workouts: Workout[];
@@ -18,12 +19,12 @@ function formatDate(iso?: string): string {
 export function WorkoutLibrary({ workouts, currentKey, onSelect, onClone, onDelete }: WorkoutLibraryProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-700">Library</h2>
+      <div className={`p-3 border-b border-gray-200 ${SECTION_LABEL}`}>
+        Library
       </div>
       <div className="flex-1 overflow-y-auto">
         {workouts.length === 0 ? (
-          <p className="text-xs text-gray-400 p-3">No saved workouts yet. Click Save to add one.</p>
+          <p className={`${EMPTY_STATE} p-3`}>No saved workouts yet. Click Save to add one.</p>
         ) : (
           <ul>
             {workouts.map((w, i) => {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
 import type { Designer, Param } from '../core/designers.ts';
 import { STARTER_DESIGNER, createDefaultDesigner } from '../core/designers.ts';
+import { EMPTY_STATE, SECTION_HEADING, SECTION_LABEL } from './styles.ts';
 
 const ROW_GRID = 'grid grid-cols-[1fr_2fr_28px] gap-2';
 const ROW_INPUT = 'w-full min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900';
@@ -64,12 +65,12 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
   return (
     <div className="flex">
       <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
-        <div className="p-3 border-b border-gray-200 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <div className={`p-3 border-b border-gray-200 ${SECTION_LABEL}`}>
           Designers
         </div>
         <div className="flex-1 overflow-auto p-3">
           {designers.length === 0 ? (
-            <div className="text-sm text-gray-400 italic">No designers yet.</div>
+            <div className={EMPTY_STATE}>No designers yet.</div>
           ) : (
             <ul className="space-y-1">
               {designers.map(d => (
@@ -122,7 +123,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
           </div>
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Source</h2>
+            <h2 className={SECTION_HEADING}>Source</h2>
             <textarea
               value={editing.source}
               onChange={e => patch({ source: e.target.value })}
@@ -165,7 +166,7 @@ function ParamSection({
 
   return (
     <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">{title}</h2>
+      <h2 className={`${SECTION_HEADING} mb-3`}>{title}</h2>
       <div className="space-y-2">
         <div className={`${ROW_GRID} text-xs text-gray-500 px-1`}>
           <div>Identifier</div>

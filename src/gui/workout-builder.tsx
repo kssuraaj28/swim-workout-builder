@@ -10,6 +10,7 @@ import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
+import { SECTION_LABEL } from './styles.ts';
 
 interface Props {
   workout: Workout;
@@ -287,7 +288,7 @@ export function WorkoutBuilder({
                 if (!designer) return null;
                 return (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <span className={SECTION_LABEL}>
                       New Set from Designer
                     </span>
                     <label className="flex flex-col text-sm text-gray-600">
@@ -365,7 +366,7 @@ function ParamInputs({
   if (params.length === 0) return null;
   return (
     <div className="space-y-2">
-      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">{title}</div>
+      <div className={SECTION_LABEL}>{title}</div>
       {params.map(p => (
         <label key={p.identifier} className="flex items-center gap-2 text-sm text-gray-600">
           <span className="w-32 font-mono truncate">{p.identifier}</span>
