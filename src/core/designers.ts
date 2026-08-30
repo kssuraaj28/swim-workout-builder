@@ -1,7 +1,10 @@
 import type { Warned } from './utils.ts';
-import { NormalizeWarnings, arrayInto, asObject, str, warnUnknown } from './utils.ts';
+import { NormalizeWarnings, arrayInto, asObject, formatTime, str, warnUnknown } from './utils.ts';
 import type { WorkoutSet } from './workouts.ts';
 import { createDefaultSet, normalizeWorkoutSet } from './workouts.ts';
+
+/** Helpers exposed to designer source under the `lib` argument. Add more as needed. */
+const LIB = { formatTime };
 
 export interface Param {
   identifier: string;
@@ -76,7 +79,7 @@ export function buildSetFromDesigner(
 ): Warned<WorkoutSet> {
   let raw: unknown;
   try {
-    raw = new Function('variation', 'overload', designer.source)(variation, overload);
+    raw = new Function('variation', 'overload', 'lib', designer.source)(variation, overload, LIB);
   } catch (err) {
     const warnings = new NormalizeWarnings();
     warnings.add(`Designer "${designer.id}" failed to run: ${err instanceof Error ? err.message : String(err)}`);

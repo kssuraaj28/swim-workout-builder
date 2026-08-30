@@ -133,6 +133,20 @@ test('buildSetFromDesigner warns when the source returns a non-object', () => {
   assertWarned(r, 'not an object');
 });
 
+test('buildSetFromDesigner exposes lib.formatTime to the source', () => {
+  const d: Designer = { ...runnableDesigner(), source: `return {
+    name: lib.formatTime(75),
+    iterations: 1,
+    steps: [{
+      repetitions: 1, strokeType: 'free', distance: 100, equipment: [],
+      track: true, targetPace: '', description: '', restType: 'rest', restValue: 15,
+    }],
+  };` };
+  const r = buildSetFromDesigner(d, {}, {});
+  assertClean(r);
+  assert.equal(r.value.name, '1:15');
+});
+
 /** Every declared option for every param must produce a clean set — catches option values that don't
  * match the enums the source ultimately targets (e.g. StrokeType, EquipmentType). */
 function assertStarterProducesCleanSets(designer: Designer): void {
