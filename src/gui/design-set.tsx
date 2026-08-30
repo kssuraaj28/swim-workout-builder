@@ -8,35 +8,38 @@ import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
 import { SidebarList } from './sidebar-list.tsx';
 
-const ROW_GRID = 'grid grid-cols-[1fr_2fr_28px] gap-2';
+const ROW_GRID = 'grid grid-cols-[1fr_2fr_160px_28px] gap-2';
 const ROW_INPUT = 'w-full min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900';
 
-/** Design-time editing shape: options is a raw comma-separated string so the user can type freely. */
+type ParamRole = 'variation' | 'overload';
+
+/** Design-time editing shape: options is a raw CSV string so the user can type freely; role picks
+ * which array the param lands in on save. */
 interface ParamEdit {
   identifier: string;
   optionsText: string;
+  role: ParamRole;
 }
 
 interface DesignerEdit {
   id: string;
   description: string;
-  variation: ParamEdit[];
-  overload: ParamEdit[];
+  params: ParamEdit[];
   source: string;
 }
 
-const EMPTY_PARAM: ParamEdit = { identifier: '', optionsText: '' };
+const EMPTY_PARAM: ParamEdit = { identifier: '', optionsText: '', role: 'variation' };
 
 function toEdit(d: Designer): DesignerEdit {
-  const toParam = (p: Param): ParamEdit => ({
+  const toParam = (role: ParamRole) => (p: Param): ParamEdit => ({
     identifier: p.identifier,
     optionsText: p.options.join(', '),
+    role,
   });
   return {
     id: d.id,
     description: d.description,
-    variation: d.variation.map(toParam),
-    overload: d.overload.map(toParam),
+    params: [...d.variation.map(toParam('variation')), ...d.overload.map(toParam('overload'))],
     source: d.source,
   };
 }
@@ -49,8 +52,8 @@ function fromEdit(d: DesignerEdit): Designer {
   return {
     id: d.id,
     description: d.description,
-    variation: d.variation.map(toParam),
-    overload: d.overload.map(toParam),
+    variation: d.params.filter(p => p.role === 'variation').map(toParam),
+    overload: d.params.filter(p => p.role === 'overload').map(toParam),
     source: d.source,
   };
 }
@@ -132,10 +135,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
             <TextArea label="Description" value={editing.description} onChange={v => patch({ description: v })} rows={2} />
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ParamSection title="Variation" rows={editing.variation} onChange={rows => patch({ variation: rows })} />
-            <ParamSection title="Overload"  rows={editing.overload}  onChange={rows => patch({ overload: rows })} />
-          </div>
+          <ParamSection rows={editing.params} onChange={rows => patch({ params: rows })} />
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-2">
             <h2 className={SECTION_HEADING}>Source</h2>
@@ -208,9 +208,8 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
 }
 
 function ParamSection({
-  title, rows, onChange,
+  rows, onChange,
 }: {
-  title: string;
   rows: ParamEdit[];
   onChange: (rows: ParamEdit[]) => void;
 }) {
@@ -224,11 +223,12 @@ function ParamSection({
 
   return (
     <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h2 className={`${SECTION_HEADING} mb-3`}>{title}</h2>
+      <h2 className={`${SECTION_HEADING} mb-3`}>Variables</h2>
       <div className="space-y-2">
         <div className={`${ROW_GRID} text-xs text-gray-500 px-1`}>
           <div>Identifier</div>
           <div>Options</div>
+          <div>Role</div>
           <div></div>
         </div>
         {rows.map((row, i) => (
@@ -247,6 +247,26 @@ function ParamSection({
               placeholder="option1, option2"
               className={ROW_INPUT}
             />
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name={`role-${i}`}
+                  checked={row.role === 'variation'}
+                  onChange={() => update(i, { role: 'variation' })}
+                />
+                variation
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name={`role-${i}`}
+                  checked={row.role === 'overload'}
+                  onChange={() => update(i, { role: 'overload' })}
+                />
+                overload
+              </label>
+            </div>
             <button
               onClick={() => remove(i)}
               className="text-red-400 hover:text-red-600 text-lg leading-none"
@@ -257,7 +277,7 @@ function ParamSection({
           </div>
         ))}
         <button onClick={add} className="text-sm text-blue-600 hover:text-blue-700">
-          + Add {title.toLowerCase()} param
+          + Add variable
         </button>
       </div>
     </section>
