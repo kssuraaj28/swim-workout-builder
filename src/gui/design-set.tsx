@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
+import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
 import type { Designer, Param } from '../core/designers.ts';
-import { STARTER_DESIGNER, createDefaultDesigner } from '../core/designers.ts';
+import { STARTER_DESIGNER, buildSetFromDesigner, createDefaultDesigner } from '../core/designers.ts';
+import type { WorkoutSet } from '../core/workouts.ts';
+import { SetCard } from './set-card.tsx';
+import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { EMPTY_STATE, SECTION_HEADING, SECTION_LABEL } from './styles.ts';
 
 const ROW_GRID = 'grid grid-cols-[1fr_2fr_28px] gap-2';
@@ -55,12 +58,26 @@ interface Props {
   designers: Designer[];
   onSaveDesigner: (designer: Designer) => void;
   onDeleteDesigner: (id: string) => void;
+  showWarnings: ShowWarnings;
 }
 
-export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props) {
+export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWarnings }: Props) {
   const [editing, setEditing] = useState<DesignerEdit>(() => toEdit(STARTER_DESIGNER));
+  const [testVariation, setTestVariation] = useState<Values>({});
+  const [testOverload, setTestOverload] = useState<Values>({});
+  const [testSet, setTestSet] = useState<WorkoutSet | null>(null);
 
   const patch = (p: Partial<DesignerEdit>) => setEditing({ ...editing, ...p });
+
+  const runTest = () => {
+    const designer = fromEdit(editing);
+    const variation = { ...initValues(designer.variation), ...testVariation };
+    const overload = { ...initValues(designer.overload), ...testOverload };
+    const { value, warnings } = buildSetFromDesigner(designer, variation, overload);
+    setTestSet(value);
+    showWarnings(`designer ${designer.id || 'test'}`, warnings);
+  };
+
 
   return (
     <div className="flex">
@@ -143,6 +160,49 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner }: Props
               Save Designer
             </button>
           </div>
+
+          {(() => {
+            const designer = fromEdit(editing);
+            const variation = { ...initValues(designer.variation), ...testVariation };
+            const overload = { ...initValues(designer.overload), ...testOverload };
+            return (
+              <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                <h2 className={SECTION_HEADING}>Test</h2>
+                <ParamInputs
+                  title="Variation"
+                  params={designer.variation}
+                  values={variation}
+                  onChange={(id, v) => setTestVariation({ ...testVariation, [id]: v })}
+                />
+                <ParamInputs
+                  title="Overload"
+                  params={designer.overload}
+                  values={overload}
+                  onChange={(id, v) => setTestOverload({ ...testOverload, [id]: v })}
+                />
+                <button
+                  onClick={runTest}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
+                  Run
+                </button>
+                {testSet && (
+                  <div className="border-t border-gray-200 pt-3">
+                    <SetCard
+                      set={testSet}
+                      index={0}
+                      onChange={setTestSet}
+                      onRemove={() => setTestSet(null)}
+                      onMoveUp={() => {}}
+                      onMoveDown={() => {}}
+                      isFirst
+                      isLast
+                    />
+                  </div>
+                )}
+              </section>
+            );
+          })()}
         </main>
       </div>
     </div>

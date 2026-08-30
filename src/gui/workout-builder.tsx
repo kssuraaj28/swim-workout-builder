@@ -3,13 +3,14 @@ import type { Workout, WorkoutKey } from '../core/workouts.ts';
 import { createDefaultWorkout, createDefaultSet, calcTotalDistance } from '../core/workouts.ts';
 import { todayDateString } from '../core/utils.ts';
 import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
-import type { Designer, Param } from '../core/designers.ts';
+import type { Designer } from '../core/designers.ts';
 import { buildSetFromDesigner } from '../core/designers.ts';
 import { SetCard } from './set-card.tsx';
 import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
+import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_LABEL } from './styles.ts';
 
 interface Props {
@@ -21,17 +22,10 @@ interface Props {
   showWarnings: ShowWarnings;
 }
 
-type Values = Record<string, string>;
 interface DesignerDraft {
   id: string;
   variation: Values;
   overload: Values;
-}
-
-function initValues(params: Param[]): Values {
-  const r: Values = {};
-  for (const p of params) r[p.identifier] = p.options[0] ?? '';
-  return r;
 }
 
 export function WorkoutBuilder({
@@ -355,30 +349,3 @@ export function WorkoutBuilder({
   );
 }
 
-function ParamInputs({
-  title, params, values, onChange,
-}: {
-  title: string;
-  params: Param[];
-  values: Values;
-  onChange: (identifier: string, value: string) => void;
-}) {
-  if (params.length === 0) return null;
-  return (
-    <div className="space-y-2">
-      <div className={SECTION_LABEL}>{title}</div>
-      {params.map(p => (
-        <label key={p.identifier} className="flex items-center gap-2 text-sm text-gray-600">
-          <span className="w-32 font-mono truncate">{p.identifier}</span>
-          <select
-            value={values[p.identifier] ?? ''}
-            onChange={e => onChange(p.identifier, e.target.value)}
-            className="flex-1 min-w-0 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white"
-          >
-            {p.options.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </label>
-      ))}
-    </div>
-  );
-}

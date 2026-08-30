@@ -59,6 +59,7 @@ function App() {
           designers={designers}
           onSaveDesigner={handleSaveDesigner}
           onDeleteDesigner={handleDeleteDesigner}
+          showWarnings={showWarnings}
         />
       )}
       {mode === 'info' && <InfoPage />}
