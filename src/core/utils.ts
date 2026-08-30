@@ -91,6 +91,20 @@ export function arrayInto<T>(value: unknown, field: string, warnings: NormalizeW
   return value.map(item);
 }
 
+/** Like {@link arrayInto} but each item returns its own Warned; child warnings merge into the parent. */
+export function warnedArrayInto<T>(
+  value: unknown,
+  field: string,
+  warnings: NormalizeWarnings,
+  item: (raw: unknown) => Warned<T>,
+): T[] {
+  return arrayInto(value, field, warnings, raw => {
+    const r = item(raw);
+    warnings.merge(r.warnings);
+    return r.value;
+  });
+}
+
 export function warnUnknown(obj: Record<string, unknown>, known: readonly string[], warnings: NormalizeWarnings): void {
   const set = new Set(known);
   for (const key of Object.keys(obj)) {
