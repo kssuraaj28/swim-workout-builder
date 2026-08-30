@@ -1,9 +1,10 @@
 /* eslint-disable react-refresh/only-export-components -- editor state factory colocated with the component */
 import type { Dispatch, SetStateAction } from 'react';
-import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT } from './header.tsx';
+import { STICKY_BELOW_HEADER_TOP, type ShowWarnings, SIDEBAR_HEIGHT } from './header.tsx';
 import type { Designer } from '../core/designers.ts';
 import type { Block, Day, DesignerUse, Ingredient, IngredientRef, Schedule } from '../core/blocks.ts';
-import { DAYS, createDefaultBlock } from '../core/blocks.ts';
+import { DAYS, buildWorkoutFromDay, createDefaultBlock, enumerateDayDesigners } from '../core/blocks.ts';
+import type { Workout } from '../core/workouts.ts';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
 import { SidebarList } from './sidebar-list.tsx';
@@ -17,6 +18,11 @@ interface AddState {
   variation: Values;
 }
 
+interface InstantiateState {
+  day: Day;
+  overloads: Values[];  // parallel to enumerateDayDesigners(block, day, designers)
+}
+
 /** Editor state lifted to App so it survives tab switches. */
 export interface BlockEditor {
   id: string;
@@ -24,14 +30,15 @@ export interface BlockEditor {
   ingredients: Ingredient[];
   schedule: Schedule;
   adding: AddState | null;
+  instantiate: InstantiateState | null;
 }
 
 export function initialBlockEditor(): BlockEditor {
-  return { ...createDefaultBlock(), adding: null };
+  return { ...createDefaultBlock(), adding: null, instantiate: null };
 }
 
 function toEditor(block: Block): BlockEditor {
-  return { ...block, adding: null };
+  return { ...block, adding: null, instantiate: null };
 }
 
 function fromEditor(editor: BlockEditor): Block {
@@ -50,16 +57,42 @@ interface Props {
   blocks: Block[];
   onSaveBlock: (block: Block) => void;
   onDeleteBlock: (id: string) => void;
+  onLoadWorkout: (workout: Workout) => void;
+  showWarnings: ShowWarnings;
 }
 
-export function BlockBuilder({ designers, editor, setEditor, blocks, onSaveBlock, onDeleteBlock }: Props) {
-  const { id, description, ingredients, schedule, adding } = editor;
+export function BlockBuilder({
+  designers, editor, setEditor, blocks, onSaveBlock, onDeleteBlock, onLoadWorkout, showWarnings,
+}: Props) {
+  const { id, description, ingredients, schedule, adding, instantiate } = editor;
   const setId = (v: string) => setEditor(e => ({ ...e, id: v }));
   const setDescription = (v: string) => setEditor(e => ({ ...e, description: v }));
   const setIngredients = (v: Ingredient[]) => setEditor(e => ({ ...e, ingredients: v }));
   const setSchedule = (v: Schedule) => setEditor(e => ({ ...e, schedule: v }));
   const setAdding = (v: AddState | null | ((prev: AddState | null) => AddState | null)) =>
     setEditor(e => ({ ...e, adding: typeof v === 'function' ? v(e.adding) : v }));
+  const setInstantiate = (v: InstantiateState | null) => setEditor(e => ({ ...e, instantiate: v }));
+
+  const openInstantiate = (day: Day) => {
+    const dayDesigners = enumerateDayDesigners(fromEditor(editor), day, designers);
+    const overloads = dayDesigners.map(d => initValues(d.designer.overload));
+    setInstantiate({ day, overloads });
+  };
+
+  const updateInstantiateOverload = (i: number, identifier: string, value: string) => {
+    if (!instantiate) return;
+    const overloads = [...instantiate.overloads];
+    overloads[i] = { ...overloads[i], [identifier]: value };
+    setInstantiate({ ...instantiate, overloads });
+  };
+
+  const loadWorkout = () => {
+    if (!instantiate) return;
+    const { value, warnings } = buildWorkoutFromDay(fromEditor(editor), instantiate.day, designers, instantiate.overloads);
+    onLoadWorkout(value);
+    setInstantiate(null);
+    showWarnings(`block ${id || '(unsaved)'}: ${titleCase(instantiate.day)}`, warnings);
+  };
 
   const openAdd = (target: AddTarget) => {
     if (designers.length === 0) return;
@@ -329,15 +362,62 @@ export function BlockBuilder({ designers, editor, setEditor, blocks, onSaveBlock
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h2 className={`${SECTION_HEADING} mb-3`}>Schedule</h2>
-            <div className="grid grid-cols-[100px_1fr_1fr] gap-2 items-center text-sm">
+            <div className="grid grid-cols-[100px_1fr_1fr_120px] gap-2 items-center text-sm">
               <div></div>
               <div className="text-xs text-gray-500 px-1">slot 1</div>
               <div className="text-xs text-gray-500 px-1">slot 2</div>
+              <div></div>
               {DAYS.map(day => (
-                <FragmentRow key={day} day={day} slots={schedule[day]} ingredients={ingredients} onChange={updateSlot} />
+                <FragmentRow
+                  key={day}
+                  day={day}
+                  slots={schedule[day]}
+                  ingredients={ingredients}
+                  onChange={updateSlot}
+                  onInstantiate={() => openInstantiate(day)}
+                />
               ))}
             </div>
           </section>
+
+          {instantiate && (() => {
+            const dayLabel = titleCase(instantiate.day);
+            const dayDesigners = enumerateDayDesigners(fromEditor(editor), instantiate.day, designers);
+            return (
+              <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                <h2 className={SECTION_HEADING}>Instantiate {dayLabel}</h2>
+                {dayDesigners.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">No swim designers scheduled for this day.</p>
+                ) : (
+                  dayDesigners.map((d, i) => (
+                    <div key={i} className="border-t border-gray-100 pt-3">
+                      <div className="text-sm font-mono text-gray-900 mb-2">{d.designerId}</div>
+                      <ParamInputs
+                        title="Overload"
+                        params={d.designer.overload}
+                        values={instantiate.overloads[i] ?? {}}
+                        onChange={(id, v) => updateInstantiateOverload(i, id, v)}
+                      />
+                    </div>
+                  ))
+                )}
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={loadWorkout}
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  >
+                    Load as workout
+                  </button>
+                  <button
+                    onClick={() => setInstantiate(null)}
+                    className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </section>
+            );
+          })()}
 
           <div className="flex justify-end">
             <button
@@ -365,18 +445,23 @@ function summarizeIngredient(ing: Ingredient): string {
   return ing.designers.length === 0 ? '(empty)' : ing.designers.map(d => d.designerId).join(', ');
 }
 
+function titleCase(s: string): string {
+  return s[0].toUpperCase() + s.slice(1);
+}
+
 function FragmentRow({
-  day, slots, ingredients, onChange,
+  day, slots, ingredients, onChange, onInstantiate,
 }: {
   day: Day;
   slots: [IngredientRef, IngredientRef];
   ingredients: Ingredient[];
   onChange: (day: Day, slot: 0 | 1, ref: IngredientRef) => void;
+  onInstantiate: () => void;
 }) {
-  const label = day[0].toUpperCase() + day.slice(1);
+  const hasAny = slots[0] !== null || slots[1] !== null;
   return (
     <>
-      <div className="text-gray-700">{label}</div>
+      <div className="text-gray-700">{titleCase(day)}</div>
       {[0, 1].map(slotNum => {
         const slot = slotNum as 0 | 1;
         const ref = slots[slot];
@@ -394,6 +479,13 @@ function FragmentRow({
           </select>
         );
       })}
+      <button
+        onClick={onInstantiate}
+        disabled={!hasAny}
+        className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-40 text-left"
+      >
+        Instantiate &rsaquo;
+      </button>
     </>
   );
 }

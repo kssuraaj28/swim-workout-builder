@@ -50,6 +50,11 @@ function App() {
     setState(s => ({ ...s, blocks: s.blocks.filter(b => b.id !== id) }));
   };
 
+  const handleLoadWorkout = (workout: Workout) => {
+    setWorkout(workout);
+    setMode('workout');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header
@@ -87,6 +92,8 @@ function App() {
           blocks={blocks}
           onSaveBlock={handleSaveBlock}
           onDeleteBlock={handleDeleteBlock}
+          onLoadWorkout={handleLoadWorkout}
+          showWarnings={showWarnings}
         />
       )}
       {mode === 'info' && <InfoPage />}
