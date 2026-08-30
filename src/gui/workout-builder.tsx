@@ -3,7 +3,6 @@ import type { Workout, WorkoutKey } from '../core/workouts.ts';
 import { createDefaultWorkout, createDefaultSet, calcTotalDistance } from '../core/workouts.ts';
 import { todayDateString } from '../core/utils.ts';
 import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
-import { buildSetFromCode } from '../core/set-from-code.ts';
 import type { Designer, Param } from '../core/designers.ts';
 import { buildSetFromDesigner } from '../core/designers.ts';
 import { SetCard } from './set-card.tsx';
@@ -11,25 +10,6 @@ import { WorkoutPreview } from './workout-preview.tsx';
 import { WorkoutLibrary } from './workout-library.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
-
-const STARTER_CODE = `return {
-  name: 'Main Set',
-  iterations: 1,
-  steps: [
-    {
-      repetitions: 5,
-      strokeType: 'free',
-      distance: 200,
-      equipment: ['pull_buoy', 'paddles'],
-      track: true,
-      targetPace: '1:30',
-      description: 'Steady pull',
-      restType: 'rest',
-      restValue: 20,
-    },
-  ],
-};
-`;
 
 interface Props {
   workout: Workout;
@@ -63,20 +43,11 @@ export function WorkoutBuilder({
 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const [garminCopied, setGarminCopied] = useState(false);
-  const [codeDraft, setCodeDraft] = useState<string | null>(null);
   const [designerDraft, setDesignerDraft] = useState<DesignerDraft | null>(null);
 
   const updateSets = (sets: Workout['sets']) => onWorkoutChange({ ...workout, sets });
 
   const addSet = () => updateSets([...workout.sets, createDefaultSet()]);
-
-  const runCodeDraft = () => {
-    if (codeDraft === null) return;
-    const { value, warnings } = buildSetFromCode(codeDraft);
-    updateSets([...workout.sets, value]);
-    setCodeDraft(null);
-    showWarnings('code', warnings);
-  };
 
   const openDesignerDraft = () => {
     if (designers.length === 0) return;
@@ -311,35 +282,6 @@ export function WorkoutBuilder({
                 ))}
               </div>
 
-              {codeDraft !== null && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    New Set from Code
-                  </span>
-                  <textarea
-                    value={codeDraft}
-                    onChange={e => setCodeDraft(e.target.value)}
-                    spellCheck={false}
-                    rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm resize-y"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={runCodeDraft}
-                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                    >
-                      Run
-                    </button>
-                    <button
-                      onClick={() => setCodeDraft(null)}
-                      className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {designerDraft !== null && (() => {
                 const designer = designers.find(d => d.id === designerDraft.id);
                 if (!designer) return null;
@@ -394,13 +336,6 @@ export function WorkoutBuilder({
                   className="px-4 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
                 >
                   + Add Set
-                </button>
-                <button
-                  onClick={() => setCodeDraft(STARTER_CODE)}
-                  disabled={codeDraft !== null}
-                  className="px-4 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 disabled:opacity-50"
-                >
-                  + Add Set from Code
                 </button>
                 <button
                   onClick={openDesignerDraft}
