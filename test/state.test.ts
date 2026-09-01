@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AppState } from '../src/core/state.ts';
 import { STATE_VERSION, createEmptyState, decodeState, encodeState } from '../src/core/state.ts';
+import type { Workout } from '../src/core/workouts.ts';
 import type { Designer } from '../src/core/designers.ts';
 import type { Block } from '../src/core/blocks.ts';
 import { emptySchedule } from '../src/core/blocks.ts';
@@ -33,7 +34,6 @@ function sampleBlock(): Block {
 function fullState(): AppState {
   return {
     version: STATE_VERSION,
-    workout: kitchenSinkWorkout(),
     library: [metricWorkout(), kitchenSinkWorkout()],
     designers: [sampleDesigner()],
     blocks: [sampleBlock()],
@@ -74,10 +74,9 @@ test('an empty file yields an empty state and warns', () => {
 });
 
 test('a state file missing its library yields defaults with warnings', () => {
-  const bytes = encodeState({ version: STATE_VERSION, workout: kitchenSinkWorkout() } as unknown as AppState);
+  const bytes = encodeState({ version: STATE_VERSION } as unknown as AppState);
   const r = decodeState(bytes);
   assert.deepEqual(r.value.library, []);
-  assert.deepEqual(r.value.workout, kitchenSinkWorkout());
 });
 
 test('a state file with an unknown top-level field warns and drops it', () => {
@@ -87,15 +86,21 @@ test('a state file with an unknown top-level field warns and drops it', () => {
   assert.equal((r.value as unknown as { extra?: number }).extra, undefined);
 });
 
+test('a legacy state file with a workout field warns and drops it', () => {
+  const bytes = encodeState({ ...fullState(), workout: kitchenSinkWorkout() } as unknown as AppState);
+  const r = decodeState(bytes);
+  assertWarned(r, 'workout');
+});
+
 test('a malformed workout inside the library surfaces its warnings', () => {
-  const bad = { ...kitchenSinkWorkout(), poolLength: 'twenty' } as unknown as AppState['workout'];
+  const bad = { ...kitchenSinkWorkout(), poolLength: 'twenty' } as unknown as Workout;
   const bytes = encodeState({ ...fullState(), library: [bad] });
   const r = decodeState(bytes);
   assertWarned(r, 'poolLength');
 });
 
 test('a state file missing its designers field loads with an empty list', () => {
-  const bytes = encodeState({ version: STATE_VERSION, workout: kitchenSinkWorkout(), library: [] } as unknown as AppState);
+  const bytes = encodeState({ version: STATE_VERSION, library: [] } as unknown as AppState);
   const r = decodeState(bytes);
   assert.deepEqual(r.value.designers, []);
 });
@@ -108,12 +113,7 @@ test('a malformed designer inside the designers array surfaces its warnings', ()
 });
 
 test('a state file missing its blocks field loads with an empty list', () => {
-  const bytes = encodeState({
-    version: STATE_VERSION,
-    workout: kitchenSinkWorkout(),
-    library: [],
-    designers: [],
-  } as unknown as AppState);
+  const bytes = encodeState({ version: STATE_VERSION, library: [], designers: [] } as unknown as AppState);
   const r = decodeState(bytes);
   assert.deepEqual(r.value.blocks, []);
 });

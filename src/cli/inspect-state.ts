@@ -43,18 +43,9 @@ function main(): void {
   }
 
   const state = loadState(path);
-  const { workout, library } = state;
+  const { library } = state;
 
   console.log(`${basename(path)}  (format v${state.version})`);
-  console.log();
-
-  console.log('Editing');
-  if (workout.sets.length === 0) {
-    console.log('  (empty)');
-  } else {
-    console.log(`  ${workout.name || 'Untitled'}  —  ${workout.createdAt}`);
-    console.log(`  ${describe(workout)}`);
-  }
   console.log();
 
   console.log(`Library (${library.length})`);

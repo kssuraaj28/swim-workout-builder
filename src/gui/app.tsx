@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Header, type AppMode, type ShowWarnings } from './header.tsx';
 import type { Workout } from '../core/workouts.ts';
+import { createDefaultWorkout } from '../core/workouts.ts';
 import type { Designer } from '../core/designers.ts';
 import type { Block } from '../core/blocks.ts';
 import type { AppState } from '../core/state.ts';
@@ -19,11 +20,11 @@ const showWarnings: ShowWarnings = (source, warnings) => {
 function App() {
   const [mode, setMode] = useState<AppMode>('workout');
   const [state, setState] = useState<AppState>(createEmptyState);
+  const [workout, setWorkout] = useState<Workout>(createDefaultWorkout);
   const [designerEditor, setDesignerEditor] = useState<DesignerEditor>(initialDesignerEditor);
   const [blockEditor, setBlockEditor] = useState<BlockEditor>(initialBlockEditor);
 
-  const { workout, library, designers, blocks } = state;
-  const setWorkout = (workout: Workout) => setState(s => ({ ...s, workout }));
+  const { library, designers, blocks } = state;
   const setLibrary = (library: Workout[]) => setState(s => ({ ...s, library }));
 
   const handleExport = () => downloadState(state);
@@ -50,8 +51,8 @@ function App() {
     setState(s => ({ ...s, blocks: s.blocks.filter(b => b.id !== id) }));
   };
 
-  const handleLoadWorkout = (workout: Workout) => {
-    setWorkout(workout);
+  const handleLoadWorkout = (w: Workout) => {
+    setWorkout(w);
     setMode('workout');
   };
 

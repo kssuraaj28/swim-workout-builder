@@ -1,6 +1,6 @@
 import { decode, encode } from 'cbor-x';
 import type { Workout } from './workouts.ts';
-import { createDefaultWorkout, normalizeWorkout } from './workouts.ts';
+import { normalizeWorkout } from './workouts.ts';
 import type { Designer } from './designers.ts';
 import { normalizeDesigner } from './designers.ts';
 import type { Block } from './blocks.ts';
@@ -10,9 +10,10 @@ import { NormalizeWarnings, asObject, warnUnknown, warnedArrayInto } from './uti
 
 export const STATE_VERSION = 1;
 
+/** Persisted state: only the saved-artifact collections. In-progress edits (current workout,
+ * designer draft, block draft) live in App-level React state and are not exported. */
 export interface AppState {
   version: number;
-  workout: Workout;
   library: Workout[];
   designers: Designer[];
   blocks: Block[];
@@ -21,7 +22,6 @@ export interface AppState {
 export function createEmptyState(): AppState {
   return {
     version: STATE_VERSION,
-    workout: createDefaultWorkout(),
     library: [],
     designers: [],
     blocks: [],
@@ -58,15 +58,12 @@ export function decodeState(bytes: Uint8Array): Warned<AppState> {
     return { value: createEmptyState(), warnings };
   }
 
-  const workoutResult = normalizeWorkout(obj.workout);
-  warnings.merge(workoutResult.warnings);
-
   const library = warnedArrayInto(obj.library, 'library', warnings, normalizeWorkout);
   const designers = warnedArrayInto(obj.designers, 'designers', warnings, normalizeDesigner);
   const blocks = warnedArrayInto(obj.blocks, 'blocks', warnings, normalizeBlock);
 
   return {
-    value: { version: STATE_VERSION, workout: workoutResult.value, library, designers, blocks },
+    value: { version: STATE_VERSION, library, designers, blocks },
     warnings,
   };
 }
