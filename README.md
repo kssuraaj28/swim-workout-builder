@@ -2,6 +2,16 @@
 
 A browser-based tool for building structured swimming workouts and exporting them as Garmin Connect-compatible JSON files.
 
+## TODOs
+
+- Review code
+- Drive sync state / localStore presistence
+- Documentation (readme + info page)
+- Starter swimstate. 
+
+
+Ignore the rest of this readme. It is garbage
+
 ## Layout
 
 ```
