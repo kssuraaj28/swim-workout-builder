@@ -4,7 +4,7 @@ import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './he
 import type { Designer, Param } from '../core/designers.ts';
 import { STARTER_DESIGNER, buildSetFromDesigner, createDefaultDesigner } from '../core/designers.ts';
 import type { WorkoutSet } from '../core/workouts.ts';
-import { SetCard } from './set-card.tsx';
+import { SetPreview } from './set-preview.tsx';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
@@ -94,13 +94,13 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
 
   const patch = (p: Partial<DesignerEdit>) => setEditing({ ...editing, ...p });
 
-  const runTest = () => {
+  const computeTest = (): WorkoutSet => {
     const designer = fromEdit(editing);
     const variation = { ...initValues(designer.variation), ...testVariation };
     const overload = { ...initValues(designer.overload), ...testOverload };
     const { value, warnings } = buildSetFromDesigner(designer, variation, overload);
-    setTestSet(value);
     showWarnings(`designer ${designer.id || 'test'}`, warnings);
+    return value;
   };
 
 
@@ -152,14 +152,13 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
             </button>
           </div>
 
-          <h2 className={`${SECTION_HEADING} pt-2`}>Test below</h2>
-
           {(() => {
             const designer = fromEdit(editing);
             const variation = { ...initValues(designer.variation), ...testVariation };
             const overload = { ...initValues(designer.overload), ...testOverload };
             return (
               <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                <h2 className={SECTION_HEADING}>Test</h2>
                 <ParamInputs
                   title="Variation"
                   params={designer.variation}
@@ -172,26 +171,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
                   values={overload}
                   onChange={(id, v) => setTestOverload({ ...testOverload, [id]: v })}
                 />
-                <button
-                  onClick={runTest}
-                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                >
-                  Preview
-                </button>
-                {testSet && (
-                  <div className="border-t border-gray-200 pt-3">
-                    <SetCard
-                      set={testSet}
-                      index={0}
-                      onChange={setTestSet}
-                      onRemove={() => setTestSet(null)}
-                      onMoveUp={() => {}}
-                      onMoveDown={() => {}}
-                      isFirst
-                      isLast
-                    />
-                  </div>
-                )}
+                <SetPreview value={testSet} onChange={setTestSet} compute={computeTest} />
               </section>
             );
           })()}

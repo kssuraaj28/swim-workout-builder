@@ -2,9 +2,11 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { STICKY_BELOW_HEADER_TOP, type ShowWarnings, SIDEBAR_HEIGHT } from './header.tsx';
 import type { Designer } from '../core/designers.ts';
+import { buildSetFromDesigner } from '../core/designers.ts';
 import type { Block, Day, DesignerUse, Ingredient, IngredientRef, Schedule } from '../core/blocks.ts';
 import { DAYS, buildWorkoutFromDay, createDefaultBlock } from '../core/blocks.ts';
-import type { Workout } from '../core/workouts.ts';
+import type { Workout, WorkoutSet } from '../core/workouts.ts';
+import { SetPreview } from './set-preview.tsx';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
@@ -20,7 +22,8 @@ interface AddState {
 
 interface InstantiateState {
   day: Day;
-  overloads: Values[];  // parallel to enumerateDayDesigners(block, day, designers)
+  overloads: Values[];  // parallel to the day's swim-designer uses in schedule order
+  previews: (WorkoutSet | null)[];  // parallel to overloads
 }
 
 /** Editor state lifted to App so it survives tab switches. */
@@ -86,7 +89,7 @@ export function BlockBuilder({
         overloads.push(initValues(d.overload));
       }
     }
-    setInstantiate({ day, overloads });
+    setInstantiate({ day, overloads, previews: overloads.map(() => null) });
   };
 
   const updateInstantiateOverload = (i: number, identifier: string, value: string) => {
@@ -94,6 +97,19 @@ export function BlockBuilder({
     const overloads = [...instantiate.overloads];
     overloads[i] = { ...overloads[i], [identifier]: value };
     setInstantiate({ ...instantiate, overloads });
+  };
+
+  const setPreviewAt = (i: number, s: WorkoutSet | null) => {
+    if (!instantiate) return;
+    const previews = [...instantiate.previews];
+    previews[i] = s;
+    setInstantiate({ ...instantiate, previews });
+  };
+
+  const computeDesignerPreview = (designer: Designer, variation: Values, overload: Values): WorkoutSet => {
+    const { value, warnings } = buildSetFromDesigner(designer, variation, overload);
+    showWarnings(`designer ${designer.id}`, warnings);
+    return value;
   };
 
   const loadWorkout = () => {
@@ -392,13 +408,18 @@ export function BlockBuilder({
                           if (!d) return null;
                           const i = designerIdx++;
                           return (
-                            <div key={k} className="ml-4 mb-3">
-                              <div className="text-xs font-mono text-gray-500 mb-2">{use.designerId}</div>
+                            <div key={k} className="ml-4 mb-3 space-y-2">
+                              <div className="text-xs font-mono text-gray-500">{use.designerId}</div>
                               <ParamInputs
                                 title="Overload"
                                 params={d.overload}
                                 values={instantiate.overloads[i] ?? {}}
                                 onChange={(id, v) => updateInstantiateOverload(i, id, v)}
+                              />
+                              <SetPreview
+                                value={instantiate.previews[i]}
+                                onChange={s => setPreviewAt(i, s)}
+                                compute={() => computeDesignerPreview(d, use.variation, instantiate.overloads[i] ?? {})}
                               />
                             </div>
                           );
