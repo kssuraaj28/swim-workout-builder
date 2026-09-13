@@ -138,32 +138,9 @@ function slotRefInto(raw: unknown, field: string, warnings: NormalizeWarnings): 
 
 // ── Instantiation ──────────────────────────────────────────────────────────
 
-export interface DayDesigner {
-  designerId: string;
-  variation: Record<string, string>;
-  designer: Designer;
-}
-
-/** Walks a day's schedule slots and resolves each swim-ingredient designer use against the current
- * designer library. Missing designers and non-swim ingredients are silently skipped. */
-export function enumerateDayDesigners(block: Block, day: Day, designers: Designer[]): DayDesigner[] {
-  const result: DayDesigner[] = [];
-  for (const ref of block.schedule[day]) {
-    if (ref === null) continue;
-    const ing = block.ingredients[ref];
-    if (!ing || ing.kind !== 'swim') continue;
-    for (const use of ing.designers) {
-      const designer = designers.find(d => d.id === use.designerId);
-      if (!designer) continue;
-      result.push({ designerId: use.designerId, variation: use.variation, designer });
-    }
-  }
-  return result;
-}
-
-/** Produce a Workout for one day of the block, given per-designer overload values (parallel to
- * enumerateDayDesigners). Prepends warmup, appends cooldown, and stamps the block/day/overload trace
- * as the workout description. */
+/** Produce a Workout for one day of the block. `overloads` is parallel to the day's swim-designer
+ * uses in schedule order (missing designers skipped). Prepends warmup, appends cooldown, stamps the
+ * block/day/overload trace as the workout description. */
 export function buildWorkoutFromDay(
   block: Block,
   day: Day,
@@ -171,9 +148,10 @@ export function buildWorkoutFromDay(
   overloads: Record<string, string>[],
 ): Warned<Workout> {
   const warnings = new NormalizeWarnings();
-  const dayDesigners: DayDesigner[] = [];
+  const sets: WorkoutSet[] = [hardcodedWarmup()];
+  const overloadLines: string[] = [];
+  let idx = 0;
 
-  // Re-walk with warnings so missing designers are surfaced (enumerate is silent for GUI use).
   for (const ref of block.schedule[day]) {
     if (ref === null) continue;
     const ing = block.ingredients[ref];
@@ -184,26 +162,17 @@ export function buildWorkoutFromDay(
         warnings.add(`Designer "${use.designerId}" no longer exists; skipped`);
         continue;
       }
-      dayDesigners.push({ designerId: use.designerId, variation: use.variation, designer });
+      const overload = overloads[idx++] ?? {};
+      const { value, warnings: w } = buildSetFromDesigner(designer, use.variation, overload);
+      sets.push(value);
+      warnings.merge(w);
+      const entries = Object.entries(overload).map(([k, v]) => `${k}=${v}`).join(', ');
+      overloadLines.push(`  ${use.designerId}: ${entries}`);
     }
-  }
-
-  const sets: WorkoutSet[] = [hardcodedWarmup()];
-  for (let i = 0; i < dayDesigners.length; i++) {
-    const { designer, variation } = dayDesigners[i];
-    const overload = overloads[i] ?? {};
-    const { value, warnings: w } = buildSetFromDesigner(designer, variation, overload);
-    sets.push(value);
-    warnings.merge(w);
   }
   sets.push(hardcodedCooldown());
 
   const dayLabel = day[0].toUpperCase() + day.slice(1);
-  const overloadLines = dayDesigners.map((d, i) => {
-    const entries = Object.entries(overloads[i] ?? {}).map(([k, v]) => `${k}=${v}`).join(', ');
-    return `  ${d.designerId}: ${entries}`;
-  });
-
   const workout: Workout = {
     ...createDefaultWorkout(),
     id: todayDateString(),

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Block } from '../src/core/blocks.ts';
-import { buildWorkoutFromDay, createDefaultBlock, emptySchedule, enumerateDayDesigners, normalizeBlock } from '../src/core/blocks.ts';
+import { buildWorkoutFromDay, createDefaultBlock, emptySchedule, normalizeBlock } from '../src/core/blocks.ts';
 import type { Designer } from '../src/core/designers.ts';
 import { assertClean, assertWarned } from './support.ts';
 
@@ -109,29 +109,6 @@ function scheduledBlock(): Block {
     schedule: { ...emptySchedule(), monday: [0, 2], tuesday: [1, null] },
   };
 }
-
-test('enumerateDayDesigners returns swim designers in slot order, skipping non-swim slots', () => {
-  const block = scheduledBlock();
-  const designers = [sampleDesigner('a'), sampleDesigner('b')];
-  const result = enumerateDayDesigners(block, 'monday', designers);
-  assert.equal(result.length, 3);
-  assert.deepEqual(result.map(d => d.designerId), ['a', 'b', 'a']);
-});
-
-test('enumerateDayDesigners silently skips other ingredients', () => {
-  const block = scheduledBlock();
-  const designers = [sampleDesigner('a'), sampleDesigner('b')];
-  const result = enumerateDayDesigners(block, 'tuesday', designers);
-  assert.equal(result.length, 0);
-});
-
-test('enumerateDayDesigners silently skips designer refs that no longer exist', () => {
-  const block = scheduledBlock();
-  const designers = [sampleDesigner('a')];  // 'b' is missing
-  const result = enumerateDayDesigners(block, 'monday', designers);
-  assert.equal(result.length, 2);
-  assert.deepEqual(result.map(d => d.designerId), ['a', 'a']);
-});
 
 test('buildWorkoutFromDay produces a workout with warmup, designer sets, and cooldown', () => {
   const block = scheduledBlock();

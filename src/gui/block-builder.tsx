@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { STICKY_BELOW_HEADER_TOP, type ShowWarnings, SIDEBAR_HEIGHT } from './header.tsx';
 import type { Designer } from '../core/designers.ts';
 import type { Block, Day, DesignerUse, Ingredient, IngredientRef, Schedule } from '../core/blocks.ts';
-import { DAYS, buildWorkoutFromDay, createDefaultBlock, enumerateDayDesigners } from '../core/blocks.ts';
+import { DAYS, buildWorkoutFromDay, createDefaultBlock } from '../core/blocks.ts';
 import type { Workout } from '../core/workouts.ts';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
@@ -74,8 +74,18 @@ export function BlockBuilder({
   const setInstantiate = (v: InstantiateState | null) => setEditor(e => ({ ...e, instantiate: v }));
 
   const openInstantiate = (day: Day) => {
-    const dayDesigners = enumerateDayDesigners(fromEditor(editor), day, designers);
-    const overloads = dayDesigners.map(d => initValues(d.designer.overload));
+    const block = fromEditor(editor);
+    const overloads: Values[] = [];
+    for (const ref of block.schedule[day]) {
+      if (ref === null) continue;
+      const ing = block.ingredients[ref];
+      if (!ing || ing.kind !== 'swim') continue;
+      for (const use of ing.designers) {
+        const d = designers.find(x => x.id === use.designerId);
+        if (!d) continue;
+        overloads.push(initValues(d.overload));
+      }
+    }
     setInstantiate({ day, overloads });
   };
 
@@ -352,24 +362,50 @@ export function BlockBuilder({
 
           {instantiate && (() => {
             const dayLabel = titleCase(instantiate.day);
-            const dayDesigners = enumerateDayDesigners(fromEditor(editor), instantiate.day, designers);
+            const block = fromEditor(editor);
+            const slotRefs = block.schedule[instantiate.day].filter((r): r is number => r !== null);
+            let designerIdx = 0;
             return (
               <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
                 <h2 className={SECTION_HEADING}>Instantiate {dayLabel}</h2>
-                {dayDesigners.length === 0 ? (
-                  <p className="text-sm text-gray-400 italic">No swim designers scheduled for this day.</p>
+                {slotRefs.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">Nothing scheduled for this day.</p>
                 ) : (
-                  dayDesigners.map((d, i) => (
-                    <div key={i} className="border-t border-gray-100 pt-3">
-                      <div className="text-sm font-mono text-gray-900 mb-2">{d.designerId}</div>
-                      <ParamInputs
-                        title="Overload"
-                        params={d.designer.overload}
-                        values={instantiate.overloads[i] ?? {}}
-                        onChange={(id, v) => updateInstantiateOverload(i, id, v)}
-                      />
-                    </div>
-                  ))
+                  slotRefs.map((ref, slotIdx) => {
+                    const ing = block.ingredients[ref];
+                    if (!ing) return null;
+                    if (ing.kind === 'other') {
+                      return (
+                        <div key={slotIdx} className="border-t border-gray-100 pt-3">
+                          <div className="text-sm font-semibold text-gray-900">{ing.name || '(untitled)'}</div>
+                          {ing.description && (
+                            <div className="text-xs text-gray-500 whitespace-pre-wrap">{ing.description}</div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={slotIdx} className="border-t border-gray-100 pt-3">
+                        <div className="text-sm font-semibold text-gray-900 mb-2">{ing.name || '(untitled)'}</div>
+                        {ing.designers.map((use, k) => {
+                          const d = designers.find(x => x.id === use.designerId);
+                          if (!d) return null;
+                          const i = designerIdx++;
+                          return (
+                            <div key={k} className="ml-4 mb-3">
+                              <div className="text-xs font-mono text-gray-500 mb-2">{use.designerId}</div>
+                              <ParamInputs
+                                title="Overload"
+                                params={d.overload}
+                                values={instantiate.overloads[i] ?? {}}
+                                onChange={(id, v) => updateInstantiateOverload(i, id, v)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })
                 )}
                 <div className="flex gap-2 pt-2">
                   <button
