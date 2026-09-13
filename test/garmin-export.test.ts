@@ -58,9 +58,9 @@ test('metric workout exports unchanged', (t: TestContext) => {
 
 // --- top-level payload -------------------------------------------------------
 
-test('copies workout name and description', () => {
+test('copies workout id and description', () => {
   const result = exportOf(kitchenSinkWorkout());
-  assert.equal(result.workoutName, 'Kitchen Sink');
+  assert.equal(result.workoutName, 'kitchen-sink');
   assert.equal(result.description, 'Exercises every branch of the Garmin exporter.');
 });
 

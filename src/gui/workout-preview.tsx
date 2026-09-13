@@ -28,7 +28,7 @@ export function WorkoutPreview({ workout }: { workout: Workout }) {
   return (
     <div className="space-y-4 text-left text-sm">
       <div className="text-center border-b border-gray-200 pb-3">
-        <h2 className="text-xl font-bold text-gray-900">{workout.name || 'Untitled Workout'}</h2>
+        <h2 className="text-xl font-bold text-gray-900">{workout.id || 'Untitled Workout'}</h2>
         {workout.description && <p className="text-gray-500 mt-1 text-xs italic">{workout.description}</p>}
         <p className="text-gray-700 font-semibold mt-2">
           Total: {totalDist} {unit}s &middot; Pool: {workout.poolLength} {unit} pool

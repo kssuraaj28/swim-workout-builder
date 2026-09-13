@@ -7,7 +7,7 @@ import type { Workout } from '../src/core/workouts.ts';
 
 export function kitchenSinkWorkout(): Workout {
   return {
-    name: 'Kitchen Sink',
+    id: 'kitchen-sink',
     createdAt: '2026-08-17',
     description: 'Exercises every branch of the Garmin exporter.',
     poolLength: 25,
@@ -75,7 +75,7 @@ export function kitchenSinkWorkout(): Workout {
 
 export function metricWorkout(): Workout {
   return {
-    name: 'Metric',
+    id: 'metric',
     createdAt: '2026-08-17',
     description: '',
     poolLength: 50,

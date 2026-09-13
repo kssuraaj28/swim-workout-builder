@@ -7,7 +7,7 @@ import { DAYS, buildWorkoutFromDay, createDefaultBlock, enumerateDayDesigners } 
 import type { Workout } from '../core/workouts.ts';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
 import { SECTION_HEADING } from './styles.ts';
-import { SidebarList } from './sidebar-list.tsx';
+import { LibrarySidebar } from './library-sidebar.tsx';
 
 /** Add-designer panel target: either a brand-new ingredient or an existing one by index. */
 type AddTarget = { kind: 'new' } | { kind: 'existing'; index: number };
@@ -172,46 +172,18 @@ export function BlockBuilder({
   return (
     <div className="flex">
       <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
-        <SidebarList
+        <LibrarySidebar
           title="Blocks"
-          isEmpty={blocks.length === 0}
-          emptyMessage="No blocks yet."
-          footer={
-            <button
-              onClick={() => setEditor(initialBlockEditor())}
-              className="w-full px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200"
-            >
-              + New Block
-            </button>
-          }
-        >
-          <ul className="p-3 space-y-1">
-            {blocks.map(b => (
-              <li key={b.id} className="flex items-center gap-1">
-                <button
-                  onClick={() => setEditor(toEditor(b))}
-                  className={`flex-1 min-w-0 text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                    b.id === id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                  }`}
-                >
-                  <div className="truncate font-mono">{b.id}</div>
-                  {b.description && (
-                    <div className="text-xs text-gray-500 truncate">{b.description}</div>
-                  )}
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Delete block "${b.id}"?`)) onDeleteBlock(b.id);
-                  }}
-                  className="text-red-400 hover:text-red-600 text-lg leading-none px-1"
-                  title="Delete"
-                >
-                  &times;
-                </button>
-              </li>
-            ))}
-          </ul>
-        </SidebarList>
+          items={blocks}
+          currentId={id}
+          onSelect={b => setEditor(toEditor(b))}
+          onDelete={onDeleteBlock}
+          onNew={() => setEditor(initialBlockEditor())}
+          labelOf={b => b.id}
+          subtitleOf={b => b.description || undefined}
+          deleteKind="block"
+          newLabel="+ New Block"
+        />
       </aside>
 
       <div className="flex-1 min-w-0">

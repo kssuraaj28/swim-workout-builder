@@ -203,7 +203,7 @@ export function buildWorkoutFromDay(
 
   const workout: Workout = {
     ...createDefaultWorkout(),
-    name: todayDateString(),
+    id: todayDateString(),
     description: [`Block: ${block.id || '(unsaved)'}`, `Day: ${dayLabel}`, `Overloads:`, ...overloadLines].join('\n'),
     sets,
   };

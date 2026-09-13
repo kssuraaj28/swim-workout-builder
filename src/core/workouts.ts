@@ -36,19 +36,15 @@ export interface WorkoutSet {
 }
 
 export interface Workout {
-  name: string;
-  /** YYYY-MM-DD. Together with `name`, forms the workout's identity in the library. User-editable. */
+  /** Unique identifier — used as the library key. Kebab-case by convention. */
+  id: string;
+  /** YYYY-MM-DD. Display metadata; not part of the key. */
   createdAt: string;
   description: string;
   poolLength: number;
   poolLengthUnit: PoolUnit;
   sets: WorkoutSet[];
   savedAt?: string; // ISO date string
-}
-
-export interface WorkoutKey {
-  name: string;
-  createdAt: string;
 }
 
 export function createDefaultStep(): WorkoutStep {
@@ -75,7 +71,7 @@ export function createDefaultSet(): WorkoutSet {
 
 export function createDefaultWorkout(): Workout {
   return {
-    name: '',
+    id: '',
     createdAt: todayDateString(),
     description: '',
     poolLength: 25,
@@ -151,7 +147,7 @@ function workoutInto(raw: unknown, field: string, warnings: NormalizeWarnings): 
   const obj = asObject(raw, field, warnings);
   warnUnknown(obj, [...WORKOUT_KEYS, ...WORKOUT_OPTIONAL_KEYS], warnings);
   const workout: Workout = {
-    name:           str(obj.name, 'name', base.name, warnings),
+    id:             str(obj.id, 'id', base.id, warnings),
     createdAt:      str(obj.createdAt, 'createdAt', base.createdAt, warnings),
     description:    str(obj.description, 'description', base.description, warnings),
     poolLength:     int(obj.poolLength, 'poolLength', 1, base.poolLength, warnings),

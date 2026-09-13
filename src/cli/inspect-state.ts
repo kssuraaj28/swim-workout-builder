@@ -54,9 +54,9 @@ function main(): void {
     return;
   }
 
-  const width = Math.max(...library.map(w => (w.name || 'Untitled').length));
+  const width = Math.max(...library.map(w => (w.id || 'Untitled').length));
   for (const w of library) {
-    console.log(`  ${w.createdAt}  ${(w.name || 'Untitled').padEnd(width)}  ${describe(w)}`);
+    console.log(`  ${w.createdAt}  ${(w.id || 'Untitled').padEnd(width)}  ${describe(w)}`);
   }
 
   const units = new Set(library.map(unit));

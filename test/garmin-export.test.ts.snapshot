@@ -1,6 +1,6 @@
 exports[`kitchen-sink workout exports unchanged 1`] = `
 {
-  "workoutName": "Kitchen Sink",
+  "workoutName": "kitchen-sink",
   "description": "Exercises every branch of the Garmin exporter.",
   "sportType": {
     "sportTypeId": 4,
@@ -546,7 +546,7 @@ exports[`kitchen-sink workout exports unchanged 1`] = `
 
 exports[`metric workout exports unchanged 1`] = `
 {
-  "workoutName": "Metric",
+  "workoutName": "metric",
   "description": "",
   "sportType": {
     "sportTypeId": 4,

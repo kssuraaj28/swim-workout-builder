@@ -202,7 +202,7 @@ export function exportToGarmin(workout: Workout): object {
   }
 
   return {
-    workoutName: workout.name,
+    workoutName: workout.id,
     description: workout.description,
     sportType: { sportTypeId: 4, sportTypeKey: 'swimming', displayOrder: 3 },
     workoutSegments: [{

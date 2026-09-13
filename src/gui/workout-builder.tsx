@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import type { Workout, WorkoutKey } from '../core/workouts.ts';
-import { createDefaultWorkout, createDefaultSet, calcTotalDistance } from '../core/workouts.ts';
-import { todayDateString } from '../core/utils.ts';
-import { DuplicateWorkoutError, removeWorkout, sameKey, upsertWorkout } from '../core/library.ts';
+import type { Workout } from '../core/workouts.ts';
+import { createDefaultSet, calcTotalDistance } from '../core/workouts.ts';
 import type { Designer } from '../core/designers.ts';
 import { buildSetFromDesigner } from '../core/designers.ts';
 import { SetCard } from './set-card.tsx';
 import { WorkoutPreview } from './workout-preview.tsx';
-import { WorkoutLibrary } from './workout-library.tsx';
+import { LibrarySidebar } from './library-sidebar.tsx';
 import { exportToGarmin } from '../core/garmin-export.ts';
 import { STICKY_BELOW_HEADER_TOP, SIDEBAR_HEIGHT, type ShowWarnings } from './header.tsx';
 import { ParamInputs, initValues, type Values } from './param-inputs.tsx';
@@ -17,7 +15,9 @@ interface Props {
   workout: Workout;
   onWorkoutChange: (workout: Workout) => void;
   library: Workout[];
-  onLibraryChange: (library: Workout[]) => void;
+  onSaveWorkout: (workout: Workout) => void;
+  onDeleteWorkout: (id: string) => void;
+  onNewWorkout: () => void;
   designers: Designer[];
   showWarnings: ShowWarnings;
 }
@@ -32,7 +32,9 @@ export function WorkoutBuilder({
   workout,
   onWorkoutChange,
   library,
-  onLibraryChange,
+  onSaveWorkout,
+  onDeleteWorkout,
+  onNewWorkout,
   designers,
   showWarnings,
 }: Props) {
@@ -105,83 +107,28 @@ export function WorkoutBuilder({
     }
   };
 
-  const handleSave = () => {
-    const commit = (overwrite: boolean) => {
-      onLibraryChange(upsertWorkout(library, workout, { overwrite }));
-      onWorkoutChange({ ...workout, savedAt: new Date().toISOString() });
-    };
-    try {
-      commit(false);
-    } catch (err) {
-      if (err instanceof DuplicateWorkoutError) {
-        if (confirm(`${err.message}\n\nOverwrite it?`)) commit(true);
-      } else {
-        throw err;
-      }
-    }
-  };
-
-  const handleNew = () => {
-    if (workout.sets.length > 0 && !confirm('Start a new workout? Unsaved changes will be lost.')) return;
-    onWorkoutChange(createDefaultWorkout());
-  };
-
-  const handleSelectFromLibrary = (w: Workout) => {
-    if (
-      workout.sets.length > 0 &&
-      !sameKey(workout, w) &&
-      !confirm('Load this workout? Unsaved changes will be lost.')
-    ) {
-      return;
-    }
-    onWorkoutChange(w);
-  };
-
-  const handleCloneFromLibrary = (w: Workout) => {
-    onWorkoutChange({
-      ...w,
-      name: `${w.name || 'Workout'} (copy)`,
-      createdAt: todayDateString(),
-      savedAt: undefined,
-    });
-  };
-
-  const handleDeleteFromLibrary = (key: WorkoutKey) => {
-    onLibraryChange(removeWorkout(library, key));
-    if (sameKey(workout, key)) onWorkoutChange(createDefaultWorkout());
-  };
-
   const totalDist = calcTotalDistance(workout);
 
   return (
     <div className="flex">
-        <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
-          <WorkoutLibrary
-            workouts={library}
-            currentKey={{ name: workout.name, createdAt: workout.createdAt }}
-            onSelect={handleSelectFromLibrary}
-            onClone={handleCloneFromLibrary}
-            onDelete={handleDeleteFromLibrary}
-          />
-        </aside>
+      <aside className={`w-64 shrink-0 bg-white border-r border-gray-200 no-print sticky ${STICKY_BELOW_HEADER_TOP} ${SIDEBAR_HEIGHT} overflow-hidden flex flex-col`}>
+        <LibrarySidebar
+          title="Library"
+          items={library}
+          currentId={workout.id}
+          onSelect={onWorkoutChange}
+          onDelete={onDeleteWorkout}
+          onNew={onNewWorkout}
+          labelOf={w => w.id || 'Untitled'}
+          subtitleOf={w => w.createdAt}
+          deleteKind="workout"
+          newLabel="+ New Workout"
+        />
+      </aside>
 
-        <div className="flex-1 min-w-0">
-          <main className="max-w-5xl mx-auto px-4 py-6">
+      <div className="flex-1 min-w-0">
+        <main className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex gap-2 flex-wrap items-center mb-4">
-            <button
-              onClick={handleNew}
-              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
-            >
-              New
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={workout.sets.length === 0}
-              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 disabled:opacity-50"
-              title="Add this workout to the library (in memory)"
-            >
-              Save
-            </button>
             <button
               onClick={() => setShowPreview(!showPreview)}
               className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300"
@@ -206,13 +153,13 @@ export function WorkoutBuilder({
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <label className="flex flex-col text-sm text-gray-600">
-                    Workout Name
+                    Id
                     <input
                       type="text"
-                      value={workout.name}
-                      onChange={e => onWorkoutChange({ ...workout, name: e.target.value })}
-                      placeholder="e.g. Swim Workout"
-                      className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                      value={workout.id}
+                      onChange={e => onWorkoutChange({ ...workout, id: e.target.value })}
+                      placeholder="kebab-case-id"
+                      className="mt-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono"
                     />
                   </label>
                   <label className="flex flex-col text-sm text-gray-600">
@@ -282,9 +229,7 @@ export function WorkoutBuilder({
                 if (!designer) return null;
                 return (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
-                    <span className={SECTION_LABEL}>
-                      New Set from Designer
-                    </span>
+                    <span className={SECTION_LABEL}>New Set from Designer</span>
                     <label className="flex flex-col text-sm text-gray-600">
                       Designer
                       <select
@@ -341,11 +286,21 @@ export function WorkoutBuilder({
                   + From Designer
                 </button>
               </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => onSaveWorkout(workout)}
+                  disabled={!workout.id.trim()}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+                  title={workout.id.trim() ? 'Save workout to the library' : 'Give the workout an id first'}
+                >
+                  Save Workout
+                </button>
+              </div>
             </div>
           )}
-          </main>
-        </div>
+        </main>
+      </div>
     </div>
   );
 }
-
