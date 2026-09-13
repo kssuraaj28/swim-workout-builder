@@ -152,13 +152,14 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
             </button>
           </div>
 
+          <h2 className={`${SECTION_HEADING} pt-2`}>Test below</h2>
+
           {(() => {
             const designer = fromEdit(editing);
             const variation = { ...initValues(designer.variation), ...testVariation };
             const overload = { ...initValues(designer.overload), ...testOverload };
             return (
               <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
-                <h2 className={SECTION_HEADING}>Test</h2>
                 <ParamInputs
                   title="Variation"
                   params={designer.variation}
@@ -175,7 +176,7 @@ export function DesignSet({ designers, onSaveDesigner, onDeleteDesigner, showWar
                   onClick={runTest}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                 >
-                  Run
+                  Preview
                 </button>
                 {testSet && (
                   <div className="border-t border-gray-200 pt-3">
