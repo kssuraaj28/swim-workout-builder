@@ -14,9 +14,10 @@ export interface DesignerUse {
 }
 
 const INGREDIENT_KINDS = ['swim', 'other'] as const;
-export type Ingredient =
-  | { kind: 'swim'; description: string; designers: DesignerUse[] }
-  | { kind: 'other'; text: string };
+export type Ingredient = { name: string } & (
+  | { kind: 'swim'; designers: DesignerUse[] }
+  | { kind: 'other'; description: string }
+);
 
 export type IngredientRef = number | null;
 export type Schedule = Record<Day, [IngredientRef, IngredientRef]>;
@@ -49,8 +50,8 @@ export function normalizeBlock(raw: unknown): Warned<Block> {
 }
 
 const BLOCK_KEYS = Object.keys(createDefaultBlock()) as (keyof Block)[];
-const SWIM_KEYS = ['kind', 'description', 'designers'];
-const OTHER_KEYS = ['kind', 'text'];
+const SWIM_KEYS = ['kind', 'name', 'designers'];
+const OTHER_KEYS = ['kind', 'name', 'description'];
 const USE_KEYS = ['designerId', 'variation'];
 
 function blockInto(raw: unknown, field: string, warnings: NormalizeWarnings): Block {
@@ -68,18 +69,20 @@ function blockInto(raw: unknown, field: string, warnings: NormalizeWarnings): Bl
 function ingredientInto(raw: unknown, field: string, warnings: NormalizeWarnings): Ingredient {
   const obj = asObject(raw, field, warnings);
   const kind = oneOf(obj.kind, INGREDIENT_KINDS, `${field}.kind`, 'swim', warnings);
+  const name = str(obj.name, `${field}.name`, '', warnings);
   if (kind === 'swim') {
     warnUnknown(obj, SWIM_KEYS, warnings);
     return {
       kind: 'swim',
-      description: str(obj.description, `${field}.description`, '', warnings),
-      designers:   arrayInto(obj.designers, `${field}.designers`, warnings, (u, i) => designerUseInto(u, `${field}.designers[${i}]`, warnings)),
+      name,
+      designers: arrayInto(obj.designers, `${field}.designers`, warnings, (u, i) => designerUseInto(u, `${field}.designers[${i}]`, warnings)),
     };
   }
   warnUnknown(obj, OTHER_KEYS, warnings);
   return {
     kind: 'other',
-    text: str(obj.text, `${field}.text`, '', warnings),
+    name,
+    description: str(obj.description, `${field}.description`, '', warnings),
   };
 }
 

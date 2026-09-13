@@ -114,7 +114,7 @@ export function BlockBuilder({
     if (!adding) return;
     const use: DesignerUse = { designerId: adding.designerId, variation: adding.variation };
     if (adding.target.kind === 'new') {
-      setIngredients([...ingredients, { kind: 'swim', description: '', designers: [use] }]);
+      setIngredients([...ingredients, { kind: 'swim', name: '', designers: [use] }]);
     } else {
       const i = adding.target.index;
       const target = ingredients[i];
@@ -127,14 +127,20 @@ export function BlockBuilder({
   };
 
   const addOtherIngredient = () => {
-    setIngredients([...ingredients, { kind: 'other', text: '' }]);
+    setIngredients([...ingredients, { kind: 'other', name: '', description: '' }]);
   };
 
-  const updateOtherText = (i: number, text: string) => {
+  const updateName = (i: number, name: string) => {
+    const next = [...ingredients];
+    next[i] = { ...next[i], name };
+    setIngredients(next);
+  };
+
+  const updateOtherDescription = (i: number, description: string) => {
     const target = ingredients[i];
     if (target.kind !== 'other') return;
     const next = [...ingredients];
-    next[i] = { kind: 'other', text };
+    next[i] = { ...target, description };
     setIngredients(next);
   };
 
@@ -147,14 +153,6 @@ export function BlockBuilder({
     if (target.kind !== 'swim') return;
     const next = [...ingredients];
     next[ingIdx] = { ...target, designers: target.designers.filter((_, j) => j !== useIdx) };
-    setIngredients(next);
-  };
-
-  const updateSwimDescription = (i: number, description: string) => {
-    const target = ingredients[i];
-    if (target.kind !== 'swim') return;
-    const next = [...ingredients];
-    next[i] = { ...target, description };
     setIngredients(next);
   };
 
@@ -228,15 +226,15 @@ export function BlockBuilder({
                       &times;
                     </button>
                   </div>
+                  <input
+                    type="text"
+                    value={ing.name}
+                    onChange={e => updateName(i, e.target.value)}
+                    placeholder="name"
+                    className="w-full mb-2 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
+                  />
                   {ing.kind === 'swim' ? (
                     <>
-                      <input
-                        type="text"
-                        value={ing.description}
-                        onChange={e => updateSwimDescription(i, e.target.value)}
-                        placeholder="description"
-                        className="w-full mb-2 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900"
-                      />
                       <ul className="space-y-1 pl-2">
                         {ing.designers.map((use, j) => (
                           <li key={j} className="flex items-start gap-2">
@@ -267,9 +265,9 @@ export function BlockBuilder({
                     </>
                   ) : (
                     <textarea
-                      value={ing.text}
-                      onChange={e => updateOtherText(i, e.target.value)}
-                      placeholder="e.g. Gym: squat 3x8"
+                      value={ing.description}
+                      onChange={e => updateOtherDescription(i, e.target.value)}
+                      placeholder="e.g. Squat 3x8, deadlift 5x5"
                       rows={2}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 resize-none"
                     />
@@ -412,8 +410,8 @@ function summarizeUse(use: DesignerUse): string {
 }
 
 function summarizeIngredient(ing: Ingredient): string {
-  if (ing.kind === 'other') return ing.text.trim() || '(untitled)';
-  if (ing.description.trim()) return ing.description.trim();
+  if (ing.name.trim()) return ing.name.trim();
+  if (ing.kind === 'other') return ing.description.trim() || '(untitled)';
   return ing.designers.length === 0 ? '(empty)' : ing.designers.map(d => d.designerId).join(', ');
 }
 

@@ -24,8 +24,8 @@ function sampleBlock(): Block {
     id: '2026-08-base',
     description: 'August base block',
     ingredients: [
-      { kind: 'swim', description: 'Endurance', designers: [{ designerId: 'endurance-free', variation: { stroke: 'free' } }] },
-      { kind: 'other', text: 'Gym: squat 3x8' },
+      { kind: 'swim', name: 'Endurance', designers: [{ designerId: 'endurance-free', variation: { stroke: 'free' } }] },
+      { kind: 'other', name: 'Gym', description: 'Squat 3x8' },
     ],
     schedule: { ...emptySchedule(), monday: [0, 1], wednesday: [0, null] },
   };

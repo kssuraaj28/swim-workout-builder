@@ -10,8 +10,8 @@ function richBlock(): Block {
     id: 'base',
     description: 'Base block',
     ingredients: [
-      { kind: 'swim', description: 'Endurance', designers: [{ designerId: 'endurance', variation: { stroke: 'free' } }] },
-      { kind: 'other', text: 'Gym' },
+      { kind: 'swim', name: 'Endurance', designers: [{ designerId: 'endurance', variation: { stroke: 'free' } }] },
+      { kind: 'other', name: 'Gym', description: 'Squat 3x8' },
     ],
     schedule: { ...emptySchedule(), monday: [0, 1], friday: [0, null] },
   };
@@ -99,9 +99,9 @@ function scheduledBlock(): Block {
     id: 'test-block',
     description: '',
     ingredients: [
-      { kind: 'swim', description: '', designers: [{ designerId: 'a', variation: { stroke: 'free' } }] },
-      { kind: 'other', text: 'gym' },
-      { kind: 'swim', description: '', designers: [
+      { kind: 'swim', name: '', designers: [{ designerId: 'a', variation: { stroke: 'free' } }] },
+      { kind: 'other', name: 'gym', description: '' },
+      { kind: 'swim', name: '', designers: [
         { designerId: 'b', variation: { stroke: 'free' } },
         { designerId: 'a', variation: { stroke: 'free' } },
       ] },
