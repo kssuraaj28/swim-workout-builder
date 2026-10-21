@@ -1,3 +1,5 @@
+# Need to enable github pages for this project in Settings/Pages
+# To see where it is hosted, you can see Settings/Pages
 name: Deploy to GitHub Pages # The name of this workflow
 
 on:
@@ -32,9 +34,10 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    # Actions/Deployments/Environments
     environment: # Has two fixed keys - name and url
       name: github-pages
-      # url: ${{ steps.deployment.outputs.page_url }} # Evaluated when all the jobs finish
+      url: ${{ steps.deployment.outputs.page_url }} # Evaluated when all the jobs finish
     steps:
-      - # id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4 #Existing action
