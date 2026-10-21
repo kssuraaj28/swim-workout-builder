@@ -32,4 +32,7 @@ export default defineConfig({
   //
   // Fine for a simple SPA with no routing. Switch to an absolute `base` if that changes.
   base: './', // In github pages, the default base will route to ???/??.js instead of ???/swim-../???.js
+  // This is a relative path. 
+  // Relative paths are a little weird when you have / don't have trailing /. 
+  // For now, we live with this.
 })
