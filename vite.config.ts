@@ -31,5 +31,5 @@ export default defineConfig({
   //   - `import.meta.env.BASE_URL` is `./`, awkward if needed as a router basename.
   //
   // Fine for a simple SPA with no routing. Switch to an absolute `base` if that changes.
-  base: './', // In github pages, the default base will route to ???/??.js instead of ???/swim-../???.js
+  base: '/', // In github pages, the default base will route to ???/??.js instead of ???/swim-../???.js
 })
