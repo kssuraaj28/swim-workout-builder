@@ -38,6 +38,7 @@ jobs:
     environment: # Has two fixed keys - name and url
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }} # Evaluated when all the jobs finish
+      # You get the url in "Complete job"
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4 #Existing action
