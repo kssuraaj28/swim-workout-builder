@@ -49,6 +49,6 @@ function stepSummary(step: WorkoutStep, unit: PoolUnit): string {
   parts.push(STROKE_LABELS[step.strokeType]);
   if (!step.track) parts.push('(drill)');
   if (step.equipment.length > 0) parts.push(`w/ ${step.equipment.map(e => EQUIPMENT_LABELS[e]).join(', ')}`);
-  if (step.targetPace) parts.push(`@ ${step.targetPace}/100`);
+  if (step.targetPace) parts.push(`@ ${step.targetPace} pace`);
   return parts.join(' ');
 }
